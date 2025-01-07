@@ -1,62 +1,66 @@
 ﻿using Controller.TableOfRecords;
 using Model.TableOfRecords;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using View.TableOfRecords;
 using ViewConsole.TableOfRecords;
 
 namespace ControllerConsole.TableOfRecords
 {
+  /// <summary>
+  /// Контроллер таблицы рекордов для консольного интерфейса.
+  /// Отвечает за отображение таблицы рекордов и обработку пользовательского ввода.
+  /// </summary>
   public class ControllerTableOfRecordsConsole : TableOfRecordsController, IConsoleController
   {
     /// <summary>
-    /// Конструктор контроллера таблицы рекордов для консоли
+    /// Инициализирует новый экземпляр контроллера таблицы рекордов для консоли.
     /// </summary>
+    /// <param name="parModelTableOfRecords">Модель таблицы рекордов.</param>
     public ControllerTableOfRecordsConsole(ModelTableOfRecords parModelTableOfRecords)
         : base(parModelTableOfRecords)
     {
     }
 
     /// <summary>
-    /// Обработка нажатий клавиш
-    /// </summary>
-    public void ProcessKeyPress()
-    {
-      bool exitRequested = false;
-
-      do
-      {
-        ConsoleKeyInfo keyInfo = Console.ReadKey();
-
-        switch (keyInfo.Key)
-        {
-          case ConsoleKey.Escape:
-            Stop();
-            GoBackCall();  
-            exitRequested = true; 
-            break;
-        }
-
-      } while (!exitRequested); 
-    }
-
-    /// <summary>
-    /// Запустить контроллер
+    /// Запускает контроллер таблицы рекордов.
+    /// Загружает и отображает таблицу рекордов, а затем обрабатывает ввод пользователя.
     /// </summary>
     public override void Start()
     {
+      // Создаём представление таблицы рекордов
       _viewTableOfRecords = new ViewTableOfRecordsConsole(_modelTableOfRecords);
       _modelTableOfRecords.Load();
-      _viewTableOfRecords.Draw(); // Отображаем таблицу рекордов
+      _viewTableOfRecords.Draw();
       ProcessKeyPress();
     }
 
     /// <summary>
-    /// Остановить контроллер
+    /// Обрабатывает нажатия клавиш пользователя.
+    /// Пользователь может выйти из экрана таблицы рекордов, нажав Escape.
+    /// </summary>
+    public void ProcessKeyPress()
+    {
+      bool exitRequested = false; // Флаг для выхода из режима просмотра таблицы рекордов
+
+      do
+      {
+        // Считываем нажатие клавиши
+        ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
+
+        switch (keyInfo.Key)
+        {
+          case ConsoleKey.Escape:
+            // При нажатии Escape завершаем работу контроллера
+            Stop();
+            GoBackCall();
+            exitRequested = true;
+            break;
+        }
+
+      } while (!exitRequested);
+    }
+
+    /// <summary>
+    /// Останавливает контроллер таблицы рекордов.
+    /// Очищает консольный экран.
     /// </summary>
     public override void Stop()
     {

@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ControllerConsole
+﻿namespace ControllerConsole
 {
+  /// <summary>
+  /// Интерфейс для контроллеров консольных приложений.
+  /// Определяет методы для обработки ввода с клавиатуры.
+  /// </summary>
   public interface IConsoleController
   {
+    /// <summary>
+    /// Метод для обработки нажатий клавиш в консольном приложении.
+    /// </summary>
     void ProcessKeyPress();
   }
 }

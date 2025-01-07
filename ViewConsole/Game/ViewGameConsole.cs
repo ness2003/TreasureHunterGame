@@ -1,14 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Model.Game;
 using Model.Game.GameObjects;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.ConstrainedExecution;
-using System.Windows;
-using System.Windows.Media.Media3D;
 using View.Game;
 using ViewsConsole;
 
@@ -19,11 +11,11 @@ namespace ViewConsole.Game
     /// <summary>
     /// Ширина игрового окна консоли
     /// </summary>
-    public const int GAME_CONSOLE_WIDTH = 80;
+    public const int GAME_CONSOLE_WIDTH = 90;
     /// <summary>
     /// Высота игрового окна консоли
     /// </summary>
-    public const int GAME_CONSOLE_HEIGHT = 35;
+    public const int GAME_CONSOLE_HEIGHT = 30;
 
     /// <summary>
     /// Длина буфера для консоли
@@ -50,6 +42,7 @@ namespace ViewConsole.Game
     /// </summary>
     private readonly Random _random = new();
 
+    private bool IsAcceptDraw = false;
 
     /// <summary>
     /// Конструктор
@@ -58,163 +51,217 @@ namespace ViewConsole.Game
     public ViewGameConsole(ModelGame parModelGame) : base(parModelGame)
     {
       _modelGame = parModelGame;
-      _modelGame.Width = GAME_CONSOLE_WIDTH;
-      _modelGame.Height = GAME_CONSOLE_HEIGHT;
       _handleConsoleOut = ConsoleHelperUtilite.GetConsoleOutputHandle();
-      _consoleBuffer = new ConsoleHelperUtilite.CharInfo[CONSOLE_BUFFER_LENGTH]; 
-      _modelGame.NeedRedraw += Draw;
+      _consoleBuffer = new ConsoleHelperUtilite.CharInfo[CONSOLE_BUFFER_LENGTH];
+      _modelGame.NeedRedraw += AcceptDraw;
     }
 
-
     /// <summary>
-    /// Вывод символа в буфер консоли
+    /// Вывод символа в буфер консоли на заданные координаты с указанным цветом.
     /// </summary>
-    /// <param name="parX">Позиция по горизонтали</param>
-    /// <param name="parY">Позиция по вертикали</param>
-    /// <param name="parColor">Цвет</param>
-    /// <param name="parChar">Символ</param>
+    /// <param name="parX">Позиция по горизонтали.</param>
+    /// <param name="parY">Позиция по вертикали.</param>
+    /// <param name="parColor">Цвет символа.</param>
+    /// <param name="parChar">Символ для вывода.</param>
     private void PlaceCharToBuffer(int parX, int parY, ConsoleColor parColor, char parChar)
     {
       if (parX < 0 || parX >= GAME_CONSOLE_WIDTH || parY < 0 || parY >= GAME_CONSOLE_HEIGHT)
         return;
 
       int offset = parY * GAME_CONSOLE_WIDTH + parX;
-      _consoleBuffer[offset].Attributes = (short)(((short)parColor) | ((short)ConsoleColor.Black) << LEFT_BYTE_SHIFT_OFFSET_FOR_BACKGROUND_COLOR);
+      _consoleBuffer[offset].Attributes = (short)(((short)parColor) | ((short)ConsoleColor.White) << LEFT_BYTE_SHIFT_OFFSET_FOR_BACKGROUND_COLOR);
       _consoleBuffer[offset].Char.UnicodeChar = parChar;
     }
 
     /// <summary>
-    /// Отрисовка игрока
+    /// Отрисовка игрока в виде прямоугольника на консоли.
     /// </summary>
-    /// <param name="parPlayer">Объект игрока</param>
-    /// <param name="parColor">Цвет</param>
-    /// <param name="parChar">Символ</param>
+    /// <param name="parPlayer">Объект игрока, содержащий его координаты и размеры.</param>
+    /// <param name="parColor">Цвет символов для отрисовки.</param>
+    /// <param name="parChar">Символ для отрисовки.</param>
     private void DrawPlayer(Player parPlayer, ConsoleColor parColor, char parChar)
     {
-      // Размеры объекта
-      Vector2 carSize = new(parPlayer.Height, parPlayer.Width);
+      int playerX = parPlayer.X;
+      int playerY = parPlayer.Y;
 
-      // Положение объекта
-      Vector2 carLeftUp = new Vector2(parPlayer.X, parPlayer.Y) - carSize / 2;
-      Vector2 carRightDown = carLeftUp + carSize;
+      int left = playerX + 1;
+      int right = playerX + parPlayer.Width - 1;
+      int top = playerY + 1;
+      int bottom = playerY + parPlayer.Height - 1;
 
-      // Здесь нужно привести координаты объекта к координатам экрана
-      // Преобразуем объектные координаты в координаты экрана
-      Vector2 leftUpOnScreen = new Vector2(carLeftUp.X, carLeftUp.Y);
-      Vector2 rightDownOnScreen = new Vector2(carRightDown.X, carRightDown.Y);
-
-      // Рисуем верхнюю и нижнюю стороны (горизонтальные линии)
-      for (int x = (int)leftUpOnScreen.X; x <= rightDownOnScreen.X; x++)
+      for (int x = left; x <= right; x++)
       {
-        PlaceCharToBuffer(x, (int)leftUpOnScreen.Y, parColor, parChar);  // Верхняя сторона
-        PlaceCharToBuffer(x, (int)rightDownOnScreen.Y, parColor, parChar); // Нижняя сторона
+        PlaceCharToBuffer(x, top, parColor, '*');
+        PlaceCharToBuffer(x, bottom, parColor, '*');
       }
 
-      // Рисуем левую и правую стороны (вертикальные линии)
-      for (int y = (int)leftUpOnScreen.Y; y <= rightDownOnScreen.Y; y++)
+      for (int y = top; y <= bottom; y++)
       {
-        PlaceCharToBuffer((int)leftUpOnScreen.X, y, parColor, parChar);  // Левая сторона
-        PlaceCharToBuffer((int)rightDownOnScreen.X, y, parColor, parChar); // Правая сторона
+        PlaceCharToBuffer(left, y, parColor, '*');
+        PlaceCharToBuffer(right, y, parColor, '*');
       }
     }
 
-
+    /// <summary>
+    /// Отрисовка заполненной окружности с заданным радиусом, центром и символом на консоли.
+    /// </summary>
+    /// <param name="parObject">Объект, содержащий радиус и координаты центра окружности.</param>
+    /// <param name="parColor">Цвет символов для отрисовки.</param>
+    /// <param name="parChar">Символ для отрисовки.</param>
     private void DrawCircle(GameObject parObject, ConsoleColor parColor, char parChar)
     {
-      // Радиус окружности
       int radius = parObject.Radius;
-
-      // Центр окружности (с учетом координат объекта)
       int centerX = parObject.X;
       int centerY = parObject.Y;
 
-      // Алгоритм Брезенхема для рисования окружности
-      int x = radius;
-      int y = 0;
-      int err = 0;
+      int x = 0;
+      int y = radius;
+      int d = 3 - 2 * radius;
 
-      while (x >= y)
+      /// <summary>
+      /// Отрисовка горизонтальной линии между двумя точками.
+      /// </summary>
+      void DrawHorizontalLine(int cx, int cy, int dx)
       {
-        // Рисуем 8 симметричных точек окружности
-        PlaceCharToBuffer(centerX + x, centerY + y, parColor, parChar); // Вверх справа
-        PlaceCharToBuffer(centerX + y, centerY + x, parColor, parChar); // Вправо сверху
-        PlaceCharToBuffer(centerX - y, centerY + x, parColor, parChar); // Вправо снизу
-        PlaceCharToBuffer(centerX - x, centerY + y, parColor, parChar); // Вниз справа
-        PlaceCharToBuffer(centerX - x, centerY - y, parColor, parChar); // Вниз слева
-        PlaceCharToBuffer(centerX - y, centerY - x, parColor, parChar); // Влево снизу
-        PlaceCharToBuffer(centerX + y, centerY - x, parColor, parChar); // Влево сверху
-        PlaceCharToBuffer(centerX + x, centerY - y, parColor, parChar); // Вверх слева
-
-        // Обновляем параметры для следующей точки на окружности
-        y += 1;
-        err += 2 * y + 1;
-        if (2 * err >= 2 * x + 1)
+        for (int i = -dx; i <= dx; i++)
         {
-          x -= 1;
-          err -= 2 * x + 1;
+          PlaceCharToBuffer(cx + i, cy, parColor, parChar);
         }
+      }
+
+      /// <summary>
+      /// Заполнение окружности горизонтальными линиями.
+      /// </summary>
+      void FillCircle(int cx, int cy, int dx, int dy)
+      {
+        DrawHorizontalLine(cx, cy + dy, dx); // Верхняя симметрия
+        DrawHorizontalLine(cx, cy - dy, dx); // Нижняя симметрия
+        DrawHorizontalLine(cx, cy + dx, dy); // Левая вертикальная симметрия
+        DrawHorizontalLine(cx, cy - dx, dy); // Правая вертикальная симметрия
+      }
+
+      while (x <= y)
+      {
+        FillCircle(centerX, centerY, x, y);
+
+        if (d < 0)
+        {
+          d += 4 * x + 6;
+        }
+        else
+        {
+          d += 4 * (x - y) + 10;
+          y--;
+        }
+        x++;
       }
     }
 
 
+
     /// <summary>
-    /// Рисование машин
+    /// Рисование объектов на поле
     /// </summary>
     private void DrawObjects()
     {
       List<GameObject> drawed = _modelGame.Coins;
       foreach (GameObject elObjects in drawed)
-        DrawCircle(elObjects, ConsoleColor.Yellow, '.');
+      {
+        ConsoleColor color;
+        switch (elObjects.ObjectType)
+        {
+          case ObjectType.GoldCell:
+            color = ConsoleColor.DarkYellow;
+            DrawCircle(elObjects, color, 'o');
+            break;
+          case ObjectType.SilverCell:
+            color = ConsoleColor.DarkGray;
+            DrawCircle(elObjects, color, 'o');
+            break;
+          case ObjectType.BronzeCell:
+            color = ConsoleColor.DarkMagenta;
+            DrawCircle(elObjects, color, 'o');
+            break;
+          default:
+            color = ConsoleColor.Red;
+            break;
+        }
+      }
 
       List<GameObject> drawed2 = _modelGame.Bonuses;
       foreach (GameObject elObjects in drawed2)
-        DrawCircle(elObjects, ConsoleColor.Cyan, '.');
+      {
+        ConsoleColor color;
+        switch (elObjects.ObjectType)
+        {
+          case ObjectType.Magnet:
+            color = ConsoleColor.DarkBlue;
+            DrawCircle(elObjects, color, 'U');
+            break;
+          case ObjectType.Timer:
+            color = ConsoleColor.Green;
+            DrawCircle(elObjects, color, 't');
+            break;
+          case ObjectType.Mul:
+            color = ConsoleColor.Cyan;
+            DrawCircle(elObjects, color, '2');
+            break;
+          default:
+            color = ConsoleColor.Red;
+            break;
+        }
+      }
 
       List<GameObject> drawed3 = _modelGame.BadObjects;
       foreach (GameObject elObjects in drawed3)
-        DrawCircle(elObjects, ConsoleColor.Red, '.');
+      {
+        ConsoleColor color;
+        switch (elObjects.ObjectType)
+        {
+          case ObjectType.Meteorite:
+            color = ConsoleColor.Red;
+            DrawCircle(elObjects, color, '*');
+            break;
+          case ObjectType.Thief:
+            color = ConsoleColor.DarkRed;
+            DrawCircle(elObjects, color, '$');
+            break;
+          default:
+            color = ConsoleColor.Red;
+            break;
+        }
+      }
     }
-
-
 
     /// <summary>
     /// Рисование границ игрового поля
-    /// </summary>
+    /// < /summary>
     private void DrawGameFieldBorders()
     {
-      // Размеры игрового поля
-      int fieldWidth = _modelGame.Width;
-      int fieldHeight = _modelGame.Height;
+      int fieldWidth = _modelGame.Width - 1;
+      int fieldHeight = _modelGame.Height - 1;
 
-      // Позиции углов
       int xLeft = 0;
       int xRight = fieldWidth;
       int yUp = 0;
       int yDown = fieldHeight;
 
-      // Рисуем верхнюю и нижнюю горизонтальные границы
       for (int x = xLeft; x <= xRight; x++)
       {
-        // Верхняя граница
-        PlaceCharToBuffer(x, yUp, ConsoleColor.Green, '\xC4');
-        // Нижняя граница
-        PlaceCharToBuffer(x, yDown, ConsoleColor.Green, '\xC4');
+        PlaceCharToBuffer(x, yUp, ConsoleColor.Black, '\xC4');
+        PlaceCharToBuffer(x, yDown, ConsoleColor.Black, '\xC4');
       }
 
-      // Рисуем левую и правую вертикальные границы
       for (int y = yUp; y <= yDown; y++)
       {
-        // Левая граница
-        PlaceCharToBuffer(xLeft, y, ConsoleColor.Green, '\xB3');
-        // Правая граница
-        PlaceCharToBuffer(xRight, y, ConsoleColor.Green, '\xB3');
+        PlaceCharToBuffer(xLeft, y, ConsoleColor.Black, '\xB3');
+        PlaceCharToBuffer(xRight, y, ConsoleColor.Black, '\xB3');
       }
 
-      // Угловые символы
-      PlaceCharToBuffer(xLeft, yUp, ConsoleColor.Green, '\xDA');   // Верхний левый угол
-      PlaceCharToBuffer(xLeft, yDown, ConsoleColor.Green, '\xC0'); // Нижний левый угол
-      PlaceCharToBuffer(xRight, yUp, ConsoleColor.Green, '\xBF');  // Верхний правый угол
-      PlaceCharToBuffer(xRight, yDown, ConsoleColor.Green, '\xD9'); // Нижний правый угол
+      PlaceCharToBuffer(xLeft, yUp, ConsoleColor.Black, '\xDA');
+      PlaceCharToBuffer(xLeft, yDown, ConsoleColor.Black, '\xC0');
+      PlaceCharToBuffer(xRight, yUp, ConsoleColor.Black, '\xBF');
+      PlaceCharToBuffer(xRight, yDown, ConsoleColor.Black, '\xD9');
     }
 
 
@@ -223,17 +270,7 @@ namespace ViewConsole.Game
     /// </summary>
     private void ClearConsoleBuffer()
     {
-      Array.Fill(_consoleBuffer, new() { Char = new() { UnicodeChar = ' ' }, Attributes = (short)ConsoleColor.Black << LEFT_BYTE_SHIFT_OFFSET_FOR_BACKGROUND_COLOR });
-    }
-
-    private void OnCanRender()
-    {
-      Application.Current.Dispatcher.Invoke(Render);
-    }
-
-    private void Render()
-    {
-      Draw();
+      Array.Fill(_consoleBuffer, new() { Char = new() { UnicodeChar = ' ' }, Attributes = (short)ConsoleColor.White << LEFT_BYTE_SHIFT_OFFSET_FOR_BACKGROUND_COLOR });
     }
 
     /// <summary>
@@ -241,62 +278,59 @@ namespace ViewConsole.Game
     /// </summary>
     public override void Draw()
     {
-      ClearConsoleBuffer();
-      DrawGameFieldBorders();
-      DrawObjects();
-      DrawPlayer(_modelGame.Player, ConsoleColor.Green, '.');
-      DrawGameStatistic();
-      ConsoleHelperUtilite.PrintToConsoleFast(_handleConsoleOut, _consoleBuffer, GAME_CONSOLE_WIDTH, GAME_CONSOLE_HEIGHT);
-    }
-
-    /// <summary>
-    /// Получение случайного цвета переднего плана, не совпадающего с <paramref name="parBackgroundColor"/>
-    /// </summary>
-    /// <param name="parBackgroundColor">Цвет заднего плана</param>
-    /// <returns></returns>
-    private ConsoleColor GetRandomCarColor(ConsoleColor parBackgroundColor)
-    {
-      const int COLORS_COUNT = 3;
-      return _random.Next(COLORS_COUNT) switch
+      if (IsAcceptDraw)
       {
-        0 => ConsoleColor.Red,
-        1 => ConsoleColor.Green,
-        2 => ConsoleColor.DarkYellow,
-        _ => ConsoleColor.Red
-      };
+        ClearConsoleBuffer();
+        DrawGameFieldBorders();
+        DrawObjects();
+        DrawPlayer(_modelGame.Player, ConsoleColor.Green, '.');
+        DrawGameStatistic();
+        ConsoleHelperUtilite.PrintToConsoleFast(_handleConsoleOut, _consoleBuffer, GAME_CONSOLE_WIDTH, GAME_CONSOLE_HEIGHT);
+        IsAcceptDraw = false;
+      }
+    }
+
+    public void AcceptDraw()
+    {
+      IsAcceptDraw = true;
     }
 
     /// <summary>
-    /// Выводит строку <paramref name="parString"/> с началом в точке (<paramref name="parX"/>, <paramref name="parY"/>)
-    /// цветом <paramref name="parColor"/>. Без переносов, при нехватке места строка отсечётся
+    /// Вывод строки в консоль на указанной позиции
     /// </summary>
-    /// <param name="parString"></param>
-    /// <param name="parColor"></param>
-    /// <param name="parX"></param>
-    /// <param name="parY"></param>
+    /// <param name="parString">Строка для вывода</param>
+    /// <param name="parColor">Цвет текста</param>
+    /// <param name="parX">Начальная позиция по горизонтали</param>
+    /// <param name="parY">Начальная позиция по вертикали</param>
     private void PrintString(string parString, ConsoleColor parColor, int parX, int parY)
     {
-      int l = parString.Length;
-      for (int i = 0; i < l; ++i)
-        PlaceCharToBuffer(parX++, parY, parColor, parString[i]);
+      int parLength = parString.Length;
+      for (int parIndex = 0; parIndex < parLength; ++parIndex)
+      {
+        PlaceCharToBuffer(parX++, parY, parColor, parString[parIndex]);
+      }
     }
 
+
     /// <summary>
-    /// Отображение таблицы лидеров
+    /// Отображение статистики
     /// </summary>
     protected void DrawGameStatistic()
     {
-      //GameField gameField = GameInstance.GameField;
-      int x = 10;
-      int y = 0;
-      PrintString($"Score: {(int)_modelGame.Score}", ConsoleColor.White, x, ++y);
-      PrintString($"Level: {(int)_modelGame.Level}", ConsoleColor.White, x, ++y);
-      PrintString($"Remaining Time: {(int)_modelGame.RemainingTime}", ConsoleColor.White, x, ++y);
-      //PrintString($"Distance: {(int)(gameField.Height - gameField.Player.Car.Position.Y - GameField.ROAD_START_OFFSET)} m", ViewsProperties.GAME_TEXT_COLOR, x, ++y);
-      //PrintString($"Danger overtakings: {(int)gameField.OvertakingCount}", ViewsProperties.GAME_TEXT_COLOR, x, ++y);
-      //PrintString($"Time: {(int)gameField.ElapsedTime} s", ViewsProperties.GAME_TEXT_COLOR, x, ++y);
-    }
+      int x = 1;
+      int y = 1;
+      PrintString($"Score: {(int)_modelGame.Score}", ConsoleColor.Black, x, y++);
+      PrintString($"Level: {(int)_modelGame.Level}", ConsoleColor.Black, x, y++);
+      PrintString($"Remaining Time: {(int)_modelGame.RemainingTime}", ConsoleColor.Black, x, y++);
+      x = 20;
+      y = 1;
+      PrintString($"===GOAL FOR LEVEL===", ConsoleColor.DarkBlue, x, y++);
+      PrintString($"GOLD COINS: {(int)_modelGame.CurrentGoal.CountGoldCoins}", ConsoleColor.DarkYellow, x, y++);
+      PrintString($"SILVER COINS: {(int)_modelGame.CurrentGoal.CountSilverCoins}", ConsoleColor.DarkGray, x, y++);
+      PrintString($"BRONZE COINS: {(int)_modelGame.CurrentGoal.CountBronzeCoins}", ConsoleColor.DarkMagenta, x, y++);
 
+      PrintString($"SCORE: {(int)_modelGame.CurrentGoal.ScoreTarget}", ConsoleColor.Blue, x, y++);
+    }
 
     /// <summary>
     /// Настройка экрана при запуске игры
@@ -310,10 +344,9 @@ namespace ViewConsole.Game
         Console.BufferWidth = GAME_CONSOLE_WIDTH;
         Console.BufferHeight = GAME_CONSOLE_HEIGHT;
       }
-      Console.BackgroundColor = ConsoleColor.Black;
-      Console.ForegroundColor = ConsoleColor.White;
+      Console.BackgroundColor = ConsoleColor.White;
+      Console.ForegroundColor = ConsoleColor.Black;
       Draw();
     }
-
   }
 }

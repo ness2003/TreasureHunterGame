@@ -1,59 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ViewConsole.Rules;
+﻿using ViewConsole.Rules;
 using Model.Rules;
-using View.Rules;
 using Controller.Rules;
-
-
-using System.Windows.Input;
-using Model.Menu;
 
 namespace ControllerConsole.Rules
 {
   /// <summary>
-  /// Контроллер правил
+  /// Контроллер правил для консольного интерфейса.
+  /// Отвечает за отображение правил игры и обработку пользовательского ввода.
   /// </summary>
   public class ControllerRulesConsole : ControllerRules, IConsoleController
   {
-
+    /// <summary>
+    /// Инициализирует новый экземпляр контроллера правил для консоли.
+    /// </summary>
+    /// <param name="parModelRules">Модель правил игры.</param>
     public ControllerRulesConsole(ModelRules parModelRules) : base(parModelRules)
     {
     }
 
-
     /// <summary>
-    /// Запустить контроллер
+    /// Запускает контроллер правил.
+    /// Отображает правила игры и начинает обработку пользовательского ввода.
     /// </summary>
     public override void Start()
     {
       _viewRules = new ViewRulesConsole(_modelRules);
       ProcessKeyPress();
     }
+
+    /// <summary>
+    /// Обрабатывает нажатия клавиш пользователя.
+    /// </summary>
     public void ProcessKeyPress()
     {
-      bool exitRequested = false;
+      bool exitRequested = false; // Флаг для выхода из режима просмотра правил
 
       do
       {
-        ConsoleKeyInfo keyInfo = Console.ReadKey();
+        ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
 
         switch (keyInfo.Key)
         {
           case ConsoleKey.Escape:
-            Stop();        
-            GoBackCall();  
-            exitRequested = true; 
+            // При нажатии Escape завершаем работу контроллера
+            Stop();
+            GoBackCall();
+            exitRequested = true;
             break;
         }
 
-      } while (!exitRequested); 
+      } while (!exitRequested);
     }
 
-
+    /// <summary>
+    /// Останавливает контроллер правил.
+    /// Очищает консольный экран.
+    /// </summary>
     public override void Stop()
     {
       Console.Clear();

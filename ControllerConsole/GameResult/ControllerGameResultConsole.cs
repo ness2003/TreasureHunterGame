@@ -1,87 +1,63 @@
-﻿using Controller;
-using Controller.GameResult;
-using Controller.Rules;
-using ControllerConsole;
+﻿using Controller.GameResult;
 using Model.GameResult;
-using Model.Menu;
 using Model.TableOfRecords;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Input;
-using View.GameResult;
 using ViewConsole.GameResult;
 
-namespace ControllerWPF.GameResult
+namespace ControllerConsole.GameResult
 {
+  /// <summary>
+  /// Контроллер результата игры для консольного интерфейса.  
+  /// Отвечает за отображение результатов игры и взаимодействие с пользователем через консоль.
+  /// </summary>
   public class ControllerGameResultConsole : ControllerGameResult, IConsoleController
   {
     /// <summary>
-    /// Конструктор контроллера результата игры для консоли
+    /// Инициализирует новый экземпляр контроллера результата игры для консоли.
     /// </summary>
+    /// <param name="parModelGameResult">Модель результата игры, содержащая информацию о счёте и уровне.</param>
     public ControllerGameResultConsole(ModelGameResult parModelGameResult)
         : base(parModelGameResult)
     {
     }
 
     /// <summary>
-    /// Запустить контроллер
+    /// Запускает контроллер результата игры.  
+    /// Отображает результаты игры и начинает обработку ввода пользователя.
     /// </summary>
     public override void Start()
     {
+      // Создание представления для консоли
       _viewGameResult = new ViewGameResultConsole(_modelGameResult);
-      _viewGameResult.Draw(); // Отображаем результаты игры
+
+      // Отображение результатов игры на консоли
+      _viewGameResult.Draw();
+
+      // Обработка ввода пользователя
       ProcessKeyPress();
     }
 
     /// <summary>
-    /// Обработка нажатий клавиш
+    /// Обрабатывает нажатия клавиш пользователя.  
+    /// Считывает имя игрока, сохраняет результат в таблицу рекордов и завершает работу контроллера.
     /// </summary>
     public void ProcessKeyPress()
     {
-      bool exitRequested = false; // Флаг для завершения цикла
+      string playerName = Console.ReadLine() ?? "Player";
 
-      do
-      {
-        ConsoleKeyInfo keyInfo = Console.ReadKey();
+      _modelGameResult.Name = playerName;
 
-        switch (keyInfo.Key)
-        {
-          case ConsoleKey.Escape:
-            exitRequested = true; // Устанавливаем флаг выхода
-            Stop(); // Останавливаем контроллер
-            break;
-        }
-
-      } while (!exitRequested); // Цикл продолжается, пока exitRequested = false
+      ModelTableOfRecords.Instance.Add(new Record(playerName, _modelGameResult.Score, _modelGameResult.Level));
+      Stop();
+      GoBackCall();
     }
 
     /// <summary>
-    /// Остановить контроллер
+    /// Останавливает контроллер результата игры.  
+    /// Очищает имя игрока в модели результата игры.
     /// </summary>
     public override void Stop()
     {
-      Console.Clear();
-      Console.WriteLine("Результаты игры закрыты.");
-
-      // Логика сохранения рекорда
-      Console.Write("Введите ваше имя для сохранения результата: ");
-      string playerName = Console.ReadLine();
-
-      if (!string.IsNullOrWhiteSpace(playerName))
-      {
-        ModelTableOfRecords.Instance.Add(new Record(playerName, _modelGameResult.Score, _modelGameResult.Level));
-        Console.WriteLine("Результат сохранен в таблице рекордов.");
-      }
-      else
-      {
-        Console.WriteLine("Результат не был сохранен.");
-      }
-
-      GoBackCall(); // Возврат в предыдущее меню
+      _modelGameResult.Name = null;
     }
   }
 }

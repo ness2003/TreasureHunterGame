@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using View.Menu;
+﻿using View.Menu;
 
 namespace ViewConsole.Menu
 {
@@ -19,6 +14,7 @@ namespace ViewConsole.Menu
     public ViewMenuConsole(Model.Menu.Menu parMenu) : base(parMenu)
     {
       Init();
+      Draw();
     }
     /// <summary>
     /// Создать представление элмента меню
@@ -39,17 +35,22 @@ namespace ViewConsole.Menu
     /// </summary>
     public override void Draw()
     {
+      Console.ForegroundColor = ConsoleColor.DarkCyan;
+      Console.SetCursorPosition((Console.WindowWidth - "TREASURE HUNTER".Length) / 2, 0); // По центру в верхней строке
+      Console.WriteLine("TREASURE HUNTER");
+
       foreach (ViewMenuItemBase elViewMenuItemBase in Items)
       {
         elViewMenuItemBase.Draw();
       }
     }
+
     /// <summary>
     /// Инициализировать представление меню
     /// </summary>
     private void Init()
     {
-      Console.Clear();
+      Console.BackgroundColor = ConsoleColor.White;
       Console.CursorVisible = false;
 
       int height = 0;

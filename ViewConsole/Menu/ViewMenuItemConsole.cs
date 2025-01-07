@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using View.Menu;
-
+﻿
 namespace ViewConsole.Menu
 {
   /// <summary>
@@ -40,17 +34,16 @@ namespace ViewConsole.Menu
           Console.ForegroundColor = ConsoleColor.Gray;
           break;
         case Model.Menu.MenuItem.Statuses.Focused:
-          Console.ForegroundColor = ConsoleColor.Yellow;
+          Console.ForegroundColor = ConsoleColor.DarkYellow;
           break;
         case Model.Menu.MenuItem.Statuses.Selected:
           Console.ForegroundColor = ConsoleColor.Green;
           break;
         case Model.Menu.MenuItem.Statuses.None:
-          Console.ForegroundColor = ConsoleColor.White;
+          Console.ForegroundColor = ConsoleColor.Black;
           break;
       }
       Console.Write(MenuItem.Name);
-      Console.ForegroundColor = savColor;
     }
   }
 }

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Controller.PauseMenu;
-using Model.Menu;
+﻿using Controller.PauseMenu;
+using ViewConsole.Menu;
 
 namespace ControllerConsole.MenuPause
 {
@@ -13,11 +8,6 @@ namespace ControllerConsole.MenuPause
   /// </summary>
   public class ControllerMenuPauseConsole : ControllerMenuPause
   {
-    /// <summary>
-    /// Флаг продолжения нахождения в меню паузы.
-    /// </summary>
-    private volatile bool _needExit = false;
-
     /// <summary>
     /// Конструктор
     /// </summary>
@@ -31,18 +21,9 @@ namespace ControllerConsole.MenuPause
     /// </summary>
     public override void Start()
     {
-      base.Start(); // Вызов метода Start базового класса
-      _needExit = false; // Сброс флага выхода из меню
-      ProcessKeyPress(); // Обработка ввода клавиш
-    }
-
-    /// <summary>
-    /// Остановка контроллера.
-    /// </summary>
-    public override void Stop()
-    {
-      Clear(); // Очистка экрана
-      base.Stop(); // Вызов метода Stop базового класса
+      base.Start();
+      _pauseMenuView = new ViewMenuConsole(_menuPause);
+      ProcessKeyPress();
     }
 
     /// <summary>
@@ -50,29 +31,29 @@ namespace ControllerConsole.MenuPause
     /// </summary>
     public void ProcessKeyPress()
     {
+      var needExit = false;
       do
       {
-        ConsoleKeyInfo keyInfo = Console.ReadKey(); // Чтение информации о нажатой клавише
+        ConsoleKeyInfo keyInfo = Console.ReadKey();
 
         switch (keyInfo.Key)
         {
           case ConsoleKey.UpArrow:
-            _menuPause.SelectPrevItem(); // Выбор предыдущего пункта меню
+            _menuPause.SelectPrevItem();
             break;
           case ConsoleKey.DownArrow:
-            _menuPause.SelectNextItem(); // Выбор следующего пункта меню
+            _menuPause.SelectNextItem();
             break;
           case ConsoleKey.Enter:
-            _menuPause.EnterSelectedItem(); // Ввод выбранного пункта меню
-            _needExit = true; // Завершаем работу, когда пункт меню выбран
+            _menuPause.EnterSelectedItem();
+            needExit = true;
             break;
           case ConsoleKey.Escape:
-            //_menuPause.Exit(); // Выход из меню паузы
-            _needExit = true; // Завершаем работу при выходе из меню
+            needExit = true;
             break;
         }
 
-      } while (!_needExit); // Повторяем, пока не будет выбран пункт меню или не нажата клавиша для выхода
+      } while (!needExit);
     }
 
     /// <summary>
