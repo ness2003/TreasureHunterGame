@@ -1,12 +1,7 @@
 ﻿using Model.Game;
-using Model.GameResult;
 using Model.TableOfRecords;
-using System;
 using System.Diagnostics;
-using System.Reflection;
-using System.Threading;
 using View.Game;
-using static Model.Menu.MenuItem;
 
 namespace Controller.Game
 {
@@ -15,20 +10,22 @@ namespace Controller.Game
   /// </summary>
   public abstract class ControllerGame : IController
   {
-    /// <summary>
-    /// Количество обновлений состояния игры в секунду.
-    /// </summary>
-    private const int GAME_UPDATES_PER_SECOND = 60;
-
-    /// <summary>
-    /// Период обновления состояния игры в секундах.
-    /// </summary>
-    private const float UPDATE_PERIOD_SECONDS = 1f / GAME_UPDATES_PER_SECOND;
 
     /// <summary>
     /// Максимально допустимое время одного кадра.
     /// </summary>
     private const float MAX_ELAPSED_TIME_BORDER = 1f;
+
+    /// <summary>
+    /// Количество обновлений состояния игры в секунду.
+    /// </summary>
+    private int _gameUpdatesPerSecond = 60;
+
+    /// <summary>
+    /// Период обновления состояния игры в секундах.
+    /// </summary>
+    private float _updatePeriodSeconds => 1f / _gameUpdatesPerSecond;
+
     /// <summary>
     /// Модель игры, содержащая игровую логику и данные.
     /// </summary>
@@ -85,6 +82,15 @@ namespace Controller.Game
     private readonly ManualResetEvent _gamePauseEvent = new(false);
 
     /// <summary>
+    /// Количество обновлений состояния игры в секунду.
+    /// </summary>
+    public int GameUpdatesPerSecond
+    {
+      get { return _gameUpdatesPerSecond; }
+      set { _gameUpdatesPerSecond = value; }
+    }
+
+    /// <summary>
     /// Инициализирует новый экземпляр контроллера игры.
     /// </summary>
     /// <param name="parModelGame">Модель игры.</param>
@@ -118,42 +124,40 @@ namespace Controller.Game
     }
 
     /// <summary>
-    /// Подписка на события
+    /// Подписка на события модели игры.
     /// </summary>
     protected virtual void SubscribeToEvents()
     {
-      GoToBack += Stop;
-      OnGamePaused += Stop;
-      _modelGame.OnTimesUp += GameEndCall;
-      _modelGame.OnTimesUp += ProcessEndGame;
-      _modelGame.OnTimesUp += ResetCall;
+      _modelGame.OnTimesUp += ProcessEndGameCall;
     }
 
     /// <summary>
-    /// Отписка от событий.
+    /// Отписка от событий модели игры.
     /// </summary>
     protected virtual void UnsubscribeFromEvents()
     {
-      GoToBack -= Stop;
-      OnGamePaused -= Stop;
-      _modelGame.OnTimesUp -= GameEndCall;
-      _modelGame.OnTimesUp -= ProcessEndGame;
-      _modelGame.OnTimesUp -= ResetCall;
+      _modelGame.OnTimesUp -= ProcessEndGameCall;
     }
-
 
     /// <summary>
     /// Обрабатывает завершение игры.
     /// </summary>
+    public abstract void ProcessEndGameCall();
+
+    /// <summary>
+    /// Завершает игру и проверяет рекорды.
+    /// </summary>
     public void ProcessEndGame()
     {
+      OnGameEnded?.Invoke();
       int score = _modelGame.Score;
       int level = _modelGame.Level;
+      Stop();
+      _modelGame?.Reset();
       if (ModelTableOfRecords.Instance.IsNewRecord(score))
       {
         ChangeScoreAndLevel?.Invoke(score, level);
         GoToGameResult?.Invoke();
-        Stop();
       }
       else
       {
@@ -175,7 +179,7 @@ namespace Controller.Game
     }
 
     /// <summary>
-    /// Вызывает событие прерывания игры.
+    /// Прерывает игру.
     /// </summary>
     public void GameInterruptCall()
     {
@@ -183,14 +187,7 @@ namespace Controller.Game
     }
 
     /// <summary>
-    /// Вызывает событие окончания игры.
-    /// </summary>
-    public void GameEndCall()
-    {
-      OnGameEnded?.Invoke();
-    }
-    /// <summary>
-    /// Возвращает к предыдущему экрану.
+    /// Возвращает в предыдущее меню.
     /// </summary>
     public void GoBackCall()
     {
@@ -206,33 +203,19 @@ namespace Controller.Game
     }
 
     /// <summary>
-    /// Обновляет состояние игрока.
-    /// </summary>
-    protected abstract void PlayerUpdateHandler();
-
-    /// <summary>
-    /// Запускает игровой цикл, обрабатывающий обновления игры.
+    /// Запускает цикл обновления состояния игры.
     /// </summary>
     private void StartGameLoop()
     {
       _gameTicker = new Thread(() =>
       {
-        Thread.CurrentThread.IsBackground = true;
         var timer = Stopwatch.StartNew();
-
         double previousTime = timer.Elapsed.TotalSeconds;
         double lagSeconds = 0;
 
         while (_gameTicker != null)
         {
-          try
-          {
-            _gamePauseEvent.WaitOne();
-          }
-          catch (ThreadInterruptedException)
-          {
-            break;
-          }
+          _gamePauseEvent.WaitOne();
           double currentTime = timer.Elapsed.TotalSeconds;
           double elapsedSeconds = currentTime - previousTime;
           previousTime = currentTime;
@@ -241,13 +224,11 @@ namespace Controller.Game
           if (lagSeconds >= MAX_ELAPSED_TIME_BORDER)
             lagSeconds = 0;
 
-          while (lagSeconds >= UPDATE_PERIOD_SECONDS)
+          while (lagSeconds >= _updatePeriodSeconds)
           {
-            _modelGame.Update((float)(UPDATE_PERIOD_SECONDS / lagSeconds), UPDATE_PERIOD_SECONDS);
-            lagSeconds -= UPDATE_PERIOD_SECONDS;
+            _modelGame.Update((float)(_updatePeriodSeconds / lagSeconds), _updatePeriodSeconds);
+            lagSeconds -= _updatePeriodSeconds;
           }
-
-          PlayerUpdateHandlerEvent?.Invoke();
         }
       })
       {

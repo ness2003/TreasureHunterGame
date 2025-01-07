@@ -1,9 +1,4 @@
 ﻿using Model.Game.GameObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Model.Game.GameInfo
 {
@@ -39,7 +34,7 @@ namespace Model.Game.GameInfo
     /// <summary>
     /// Событие, которое срабатывает при достижении цели.
     /// </summary>
-    public event Action? GoalCompleted;
+    public event Action? OnGoalCompleted;
 
     /// <summary>
     /// Количество золотых монет, которые необходимо собрать для достижения цели.
@@ -76,7 +71,7 @@ namespace Model.Game.GameInfo
       {
         _instance = new Goal();
         _instance.GenerateGoal(1);
-        
+
       }
       return _instance;
     }
@@ -116,7 +111,7 @@ namespace Model.Game.GameInfo
       // Проверяем, достиг ли игрок цели
       if (CountGoldCoins <= 0 && CountSilverCoins <= 0 && CountBronzeCoins <= 0 && parScore >= ScoreTarget)
       {
-        GoalCompleted?.Invoke();
+        OnGoalCompleted?.Invoke();
       }
     }
   }

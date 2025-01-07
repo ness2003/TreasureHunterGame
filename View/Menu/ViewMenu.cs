@@ -1,39 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-
+﻿
 namespace View.Menu
 {
   /// <summary>
-  /// Представление меню
+  /// Абстрактное представление меню, предоставляющее базовые свойства и методы для создания и управления элементами меню.
   /// </summary>
   public abstract class ViewMenu : ViewBase
   {
     /// <summary>
-    /// Координата по горизонтали
+    /// Координата по горизонтали для отображения меню.
     /// </summary>
     protected int X { get; set; }
+
     /// <summary>
-    /// Координата по вертикали
+    /// Координата по вертикали для отображения меню.
     /// </summary>
     protected int Y { get; set; }
+
     /// <summary>
-    /// Ширина меню
+    /// Ширина меню.
     /// </summary>
     protected int Width { get; set; }
+
     /// <summary>
-    /// Высота меню
+    /// Высота меню.
     /// </summary>
     protected int Height { get; set; }
+
     /// <summary>
-    /// Представления элментов меню
+    /// Список элементов меню.
     /// </summary>
     private List<ViewMenuItemBase> _items = new List<ViewMenuItemBase>();
+
     /// <summary>
-    /// Представления элментов меню
+    /// Массив представлений элементов меню.
     /// </summary>
     protected ViewMenuItemBase[] Items
     {
@@ -42,21 +41,23 @@ namespace View.Menu
         return _items.ToArray();
       }
     }
+
     /// <summary>
-    /// Конструктор
+    /// Конструктор класса
+    /// Инициализирует элементы меню на основе переданной модели.
     /// </summary>
-    /// <param name="parMenu"></param>
+    /// <param name="parMenu">Модель меню, содержащая элементы для отображения.</param>
     public ViewMenu(Model.Menu.Menu parMenu)
     {
       foreach (Model.Menu.MenuItem elMenuItem in parMenu.Items)
         _items.Add(CreateMenuItem(elMenuItem));
     }
-    /// <summary>
-    /// Создать представление элемента меню
-    /// </summary>
-    /// <param name="parItem"></param>
-    /// <returns></returns>
-    protected abstract ViewMenuItemBase CreateMenuItem(Model.Menu.MenuItem parItem);
 
+    /// <summary>
+    /// Абстрактный метод для создания представления элемента меню.
+    /// </summary>
+    /// <param name="parItem">Модель элемента меню.</param>
+    /// <returns>Экземпляр <see cref="ViewMenuItemBase"/>, представляющий элемент меню.</returns>
+    protected abstract ViewMenuItemBase CreateMenuItem(Model.Menu.MenuItem parItem);
   }
 }

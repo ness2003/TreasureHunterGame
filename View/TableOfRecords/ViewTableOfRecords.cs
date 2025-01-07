@@ -1,25 +1,23 @@
 ﻿using Model.TableOfRecords;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace View.TableOfRecords
 {
   /// <summary>
-  /// Представление таблицы рекордов
+  /// Абстрактное представление таблицы рекордов.  
+  /// Отвечает за отображение данных о лучших результатах игроков.
   /// </summary>
   public abstract class ViewTableOfRecords : ViewBase
   {
     /// <summary>
-    /// Рекорды
+    /// Модель таблицы рекордов, содержащая данные о результатах игроков.
     /// </summary>
     protected ModelTableOfRecords _modelTableOfRecords;
-   
+
     /// <summary>
-    /// Конструктор
+    /// Конструктор класса
+    /// Инициализирует модель таблицы рекордов.
     /// </summary>
+    /// <param name="parModelTableOfRecords">Экземпляр модели таблицы рекордов.</param>
     public ViewTableOfRecords(ModelTableOfRecords parModelTableOfRecords)
     {
       _modelTableOfRecords = parModelTableOfRecords;

@@ -1,43 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using Model.Menu;
-
+﻿
 namespace View.Menu
 {
+  /// <summary>
+  /// Абстрактное представление элемента меню, предоставляющее базовые свойства и методы для отображения и управления элементами меню.
+  /// </summary>
   public abstract class ViewMenuItemBase : ViewBase
   {
     /// <summary>
-    /// Координата по горизонтали
+    /// Координата по горизонтали для отображения элемента меню.
     /// </summary>
     public int X { get; set; }
+
     /// <summary>
-    /// Координата по вертикали
+    /// Координата по вертикали для отображения элемента меню.
     /// </summary>
     public int Y { get; set; }
+
     /// <summary>
-    /// Ширина представления
+    /// Ширина представления элемента меню.
     /// </summary>
     public int Width { get; protected set; }
+
     /// <summary>
-    /// Высота представления
+    /// Высота представления элемента меню.
     /// </summary>
     public int Height { get; protected set; }
+
     /// <summary>
-    /// Элемент меню
+    /// Модель элемента меню, содержащая данные и логику элемента.
     /// </summary>
     private Model.Menu.MenuItem _menuItem = null;
+
+    /// <summary>
+    /// Доступ к модели элемента меню.
+    /// </summary>
     protected Model.Menu.MenuItem MenuItem
     {
       get { return _menuItem; }
     }
+
     /// <summary>
-    /// Конструктор
+    /// Конструктор абстрактного класса <see cref="ViewMenuItemBase"/>.
+    /// Инициализирует элемент меню на основе переданной модели.
     /// </summary>
-    /// <param name="parMenuItemBase"></param>
+    /// <param name="parMenuItemBase">Модель элемента меню, используемая для создания представления.</param>
     public ViewMenuItemBase(Model.Menu.MenuItem parMenuItemBase)
     {
       _menuItem = parMenuItemBase;

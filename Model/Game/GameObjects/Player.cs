@@ -5,11 +5,16 @@
   /// </summary>
   public class Player
   {
-    // Поля класса
+    /// <summary>
+    /// Ширина игрового поля
+    /// </summary>
     private int _fieldWidth;
+
+    /// <summary>
+    /// Высота игрового поля
+    /// </summary>
     private int _fieldHeight;
 
-    // Свойства класса
     /// <summary>
     /// Позиция игрока по оси X.
     /// </summary>
@@ -74,8 +79,8 @@
     /// </summary>
     public void ResetPosition()
     {
-      X = _fieldWidth / 2 - Width / 2; // Центрируем игрока по горизонтали
-      Y = _fieldHeight - Height;       // Размещаем игрока внизу игрового поля
+      X = _fieldWidth / 2 - Width / 2; 
+      Y = _fieldHeight - Height;       
     }
 
 

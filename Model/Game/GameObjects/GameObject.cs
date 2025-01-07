@@ -1,5 +1,4 @@
 ﻿using Model.Game.Strategy;
-using System;
 
 namespace Model.Game.GameObjects
 {
@@ -68,7 +67,7 @@ namespace Model.Game.GameObjects
     /// <summary>
     /// Событие, которое вызывается при падении объекта.
     /// </summary>
-    public event Action<GameObject, ObjectType>? onFall;
+    public event Action<GameObject, ObjectType>? OnFall;
 
     // Конструктор
     /// <summary>
@@ -95,15 +94,6 @@ namespace Model.Game.GameObjects
       _moveStrategy = parMoveStrategy;
     }
 
-    // Методы
-    /// <summary>
-    /// Создает копию текущего объекта.
-    /// </summary>
-    /// <returns>Клонированный объект игры.</returns>
-    public GameObject Clone()
-    {
-      return new GameObject(X, Y, Speed, ObjectType, Radius, _gameFieldHeight, _gameFieldWidth, _moveStrategy);
-    }
 
     /// <summary>
     /// Устанавливает случайное горизонтальное смещение для объекта.
@@ -135,7 +125,7 @@ namespace Model.Game.GameObjects
     /// </summary>
     public void TriggerFall()
     {
-      onFall?.Invoke(this, ObjectType);
+      OnFall?.Invoke(this, ObjectType);
     }
   }
 }

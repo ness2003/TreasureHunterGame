@@ -1,8 +1,4 @@
-﻿using System;
-using Controller.Game;
-using Controller.Rules;
-using Controller.TableOfRecords;
-using Model.Menu;
+﻿using Model.Menu;
 using View.Menu;
 
 namespace Controller.PauseMenu
@@ -49,6 +45,7 @@ namespace Controller.PauseMenu
     /// </summary>
     public virtual void Start()
     {
+      _menuPause.UnsubscribeAll();
       Clear();
       _menuPause[(int)MenuPause.MenuIds.Continue].Enter += GoBackCall;
       _menuPause[(int)MenuPause.MenuIds.Continue].Enter += Stop;
@@ -61,6 +58,7 @@ namespace Controller.PauseMenu
     /// </summary>
     public virtual void Stop()
     {
+      _menuPause.UnsubscribeAll();
       Clear();
       _menuPause[(int)MenuPause.MenuIds.Continue].Enter -= GoBackCall;
       _menuPause[(int)MenuPause.MenuIds.MainMenu].Enter -= GoToMainMenuCall;

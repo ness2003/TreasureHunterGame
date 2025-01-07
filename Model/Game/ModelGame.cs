@@ -1,5 +1,4 @@
 ﻿using Model.Game.GameObjects;
-using Model.Game.Новая_папка.Factories;
 using Model.Game.Новая_папка;
 using System;
 using Model.Game.Strategy;
@@ -15,18 +14,10 @@ namespace Model.Game
   public class ModelGame
   {
 
-   /// <summary>
-   /// Фабрика монет.
-   /// </summary>
-    private GameObjectFactory _coinFactory = new CoinFactory();
     /// <summary>
-    /// Фабрика бонусов.
+    /// Универсальная фабрика игровых объектов.
     /// </summary>
-    private GameObjectFactory _bonusFactory = new BonusFactory();
-    /// <summary>
-    /// Фабрика плохих объектов.
-    /// </summary>
-    private GameObjectFactory _badObjectFactory = new BadObjectFactory();
+    private GameObjectFactory _objectFactory;
 
     /// <summary>
     /// Длительность действия магнита (в секундах)
@@ -35,7 +26,7 @@ namespace Model.Game
     /// <summary>
     /// Время на уровень (в секундах)
     /// </summary>
-    private const float TIME_FOR_LEVEL = 60f;
+    private const float TIME_FOR_LEVEL = 120f;
 
     /// <summary>
     /// Время, прошедшее с последнего обновления
@@ -48,7 +39,7 @@ namespace Model.Game
     /// <summary>
     /// Время с последнего спавна объектов
     /// </summary>
-    private float _timeSinceLastSpawn = 0;  
+    private float _timeSinceLastSpawn = 0;
     /// <summary>
     /// Время активации магнита
     /// </summary>
@@ -90,11 +81,6 @@ namespace Model.Game
     public int Height { get; set; } = 500;
 
     /// <summary>
-    /// Радиус объектов.
-    /// </summary>
-    public int ObjectsRadius { get; set; } = 20;
-
-    /// <summary>
     /// Уровень игры.
     /// </summary>
     public int Level { get; set; }
@@ -107,7 +93,7 @@ namespace Model.Game
     /// <summary>
     /// Время, прошедшее с начала игры.
     /// </summary>
-    public float ElapsedTime { get; private set; } = 0;
+    public float ElapsedTime { get; set; } = 0;
 
     /// <summary>
     /// Оставшееся время.
@@ -177,9 +163,7 @@ namespace Model.Game
         List<GameObject> parCoins,
         List<GameObject> parBonuses,
         List<GameObject> parBadObjects,
-        GameObjectFactory parCoinFactory,
-        GameObjectFactory parBonusFactory,
-        GameObjectFactory parBadObjectFactory,
+        GameObjectFactory parFactory,
         Random parRandom,
         int parWidth = 1000,
         int parHeight = 500,
@@ -191,9 +175,7 @@ namespace Model.Game
       Coins = parCoins;
       Bonuses = parBonuses;
       BadObjects = parBadObjects;
-      _coinFactory = parCoinFactory;
-      _bonusFactory = parBonusFactory;
-      _badObjectFactory = parBadObjectFactory;
+      _objectFactory = parFactory;
       Random = parRandom;
       Width = parWidth;
       Height = parHeight;
@@ -201,7 +183,7 @@ namespace Model.Game
       Score = parScore;
 
       // Подписка на событие завершения цели уровня.
-      CurrentGoal.GoalCompleted += UpdateLevel;
+      CurrentGoal.OnGoalCompleted += UpdateLevel;
     }
 
     /// <summary>
@@ -246,11 +228,9 @@ namespace Model.Game
     {
       ElapsedTime += parDeltaTime;
       RemainingTime = TIME_FOR_LEVEL - (ElapsedTime - TIME_FOR_LEVEL * (Level - 1)) + AdditionTime;
-
-      // Если время истекло, вызываем событие завершения уровня.
       if (RemainingTime <= 0)
       {
-        Application.Current.Dispatcher.Invoke(TimesUp);
+        OnTimesUp?.Invoke();
       }
     }
 
@@ -340,7 +320,7 @@ namespace Model.Game
         if (PlayerCollidesWithObject(parObj: obj))
         {
           HandleCatch(parValue: obj.ObjectType);
-          obj.onFall -= HandleFall;
+          obj.OnFall -= HandleFall;
           parObjects.Remove(obj);
         }
       }
@@ -367,13 +347,13 @@ namespace Model.Game
 
       GameObject newObject = randomType switch
       {
-        <= 6 => _coinFactory.CreateGameObject(0, 0, 2, ObjectsRadius, Height, Width), // 0-6: монеты (70%)
-        <= 8 => _badObjectFactory.CreateGameObject(0, 0, 2, ObjectsRadius, Height, Width), // 7-8: плохие объекты (20%)
-        9 => _bonusFactory.CreateGameObject(0, 0, 2, ObjectsRadius, Height, Width), // 9: бонусы (10%)
+        <= 6 => _objectFactory.CreateRandomCoin(), // 0-6: монеты (70%)
+        <= 8 => _objectFactory.CreateRandomBadObject(), // 7-8: плохие объекты (20%)
+        9 => _objectFactory.CreateRandomBonus(), // 9: бонусы (10%)
         _ => throw new ArgumentException("Unknown object type")
       };
 
-      newObject.onFall += HandleFall;
+      newObject.OnFall += HandleFall;
 
       if (IsMagnetActive && randomType <= 6) // Магнит действует только на монеты
       {
@@ -438,7 +418,7 @@ namespace Model.Game
           BadObjects?.Remove(parModel);
           break;
       }
-      parModel.onFall -= HandleFall;
+      parModel.OnFall -= HandleFall;
     }
 
     /// <summary>
@@ -475,12 +455,26 @@ namespace Model.Game
         case ObjectType.Mul: Score *= 2; break;
         case ObjectType.Timer: AdditionTime += 10; break;
         case ObjectType.Magnet: IsMagnetActive = true; magnetActivationTime = 0f; break;
-        case ObjectType.Meteorite: Score -= 10; break;
+        case ObjectType.Meteorite: ApplyMeteoriteEffect(); break;
         case ObjectType.Thief: ApplyThiefEffect(); break;
       }
       CurrentGoal.ProcessCoin(parValue, Score);
     }
 
+    /// <summary>
+    /// Применение эффекта метеорита
+    /// </summary>
+    private void ApplyMeteoriteEffect()
+    {
+      if (Level == 1)
+      {
+        Score -= 10;
+      }
+      else
+      {
+        Score /= 10;
+      }
+    }
     /// <summary>
     /// Применение эффекта вора.
     /// </summary>
@@ -497,21 +491,21 @@ namespace Model.Game
       for (int i = 0; i < Coins?.Count; i++)
       {
         GameObject? coin = Coins[i];
-        coin.onFall -= HandleFall;
+        coin.OnFall -= HandleFall;
       }
       Coins?.Clear();
 
       for (int j = 0; j < Bonuses?.Count; j++)
       {
         GameObject? bonus = Bonuses[j];
-        bonus.onFall -= HandleFall;
+        bonus.OnFall -= HandleFall;
       }
       Bonuses?.Clear();
 
       for (int k = 0; k < BadObjects?.Count; k++)
       {
         GameObject? badObject = BadObjects[k];
-        badObject.onFall -= HandleFall;
+        badObject.OnFall -= HandleFall;
       }
       BadObjects?.Clear();
     }

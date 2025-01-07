@@ -1,5 +1,4 @@
-﻿using System;
-using Model.Rules;
+﻿using Model.Rules;
 using View.Rules;
 
 namespace Controller.Rules

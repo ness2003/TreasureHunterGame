@@ -1,9 +1,4 @@
 ﻿using Model.Game.GameObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Model.Game.Strategy
 {
@@ -12,8 +7,14 @@ namespace Model.Game.Strategy
   /// </summary>
   public class MoveToGoalStrategy : IMoveStrategy
   {
-    private float goalX;
-    private float goalY;
+    /// <summary>
+    /// Координата X цели
+    /// </summary>
+    private float _goalX;
+    /// <summary>
+    /// Координата Y цели
+    /// </summary>
+    private float _goalY;
 
     /// <summary>
     /// Инициализирует стратегию перемещения объекта к цели.
@@ -22,8 +23,8 @@ namespace Model.Game.Strategy
     /// <param name="parGoalY">Координата Y цели.</param>
     public MoveToGoalStrategy(float parGoalX, float parGoalY)
     {
-      this.goalX = parGoalX;
-      this.goalY = parGoalY;
+      _goalX = parGoalX;
+      _goalY = parGoalY;
     }
 
     /// <summary>
@@ -33,8 +34,8 @@ namespace Model.Game.Strategy
     public void Move(GameObject parGameObject)
     {
       // Вычисляем вектор направления от объекта к цели
-      float offsetX = goalX - parGameObject.X;
-      float offsetY = goalY - parGameObject.Y;
+      float offsetX = _goalX - parGameObject.X;
+      float offsetY = _goalY - parGameObject.Y;
 
       // Находим расстояние (или длину вектора)
       float distance = (float)Math.Sqrt(offsetX * offsetX + offsetY * offsetY);
@@ -42,8 +43,8 @@ namespace Model.Game.Strategy
       // Если объект близок к цели, останавливаем его движение
       if (distance < 5f)
       {
-        parGameObject.X = (int)goalX;
-        parGameObject.Y = (int)goalY;
+        parGameObject.X = (int)_goalX;
+        parGameObject.Y = (int)_goalY;
       }
       else
       {
@@ -52,7 +53,7 @@ namespace Model.Game.Strategy
         offsetY /= distance;
 
         // Перемещаем объект к цели с фиксированной скоростью
-        float speed = 10f;
+        float speed = parGameObject.Speed;
         parGameObject.X += (int)(offsetX * speed);
         parGameObject.Y += (int)(offsetY * speed);
       }

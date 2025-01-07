@@ -1,7 +1,4 @@
-﻿using Model.Rules;
-using System;
-using View.Rules;
-using Model.TableOfRecords;
+﻿using Model.TableOfRecords;
 using View.TableOfRecords;
 
 namespace Controller.TableOfRecords

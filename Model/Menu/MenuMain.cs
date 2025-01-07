@@ -1,5 +1,4 @@
-﻿using System;
-using static Model.Menu.MenuItem;
+﻿
 
 namespace Model.Menu
 {
@@ -46,12 +45,9 @@ namespace Model.Menu
     {
       // Добавляем элементы меню с идентификаторами и названиями.
       AddMenuItem(new MenuItem((int)MenuIds.New, "Новая игра"));
-      AddMenuItem(new MenuItem((int)MenuIds.Rules, "Правила")); 
+      AddMenuItem(new MenuItem((int)MenuIds.Rules, "Правила"));
       AddMenuItem(new MenuItem((int)MenuIds.Records, "Рекорды"));
       AddMenuItem(new MenuItem((int)MenuIds.Exit, "Выход"));
-
-      // Делаем пункт "Правила" неактивным.
-      SetMenuItemStatus((int)MenuIds.Rules, MenuItem.Statuses.Disabled);
 
       // Устанавливаем фокус на следующий элемент.
       SelectNextItem();

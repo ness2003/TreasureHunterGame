@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text.Json;
 
 namespace Model.TableOfRecords
@@ -14,12 +11,12 @@ namespace Model.TableOfRecords
     /// <summary>
     /// Максимальное количество хранимых рекордов.
     /// </summary>
-    public static readonly int SIZE = 10;
+    public const int SIZE = 10;
 
     /// <summary>
     /// Путь к файлу, где сохраняются рекорды.
     /// </summary>
-    private static readonly string PATH = "ScoreList.json";
+    private const string PATH = "ScoreList.json";
 
     /// <summary>
     /// Экземпляр класса (Singleton).
@@ -47,7 +44,7 @@ namespace Model.TableOfRecords
     });
 
     /// <summary>
-    /// Приватный конструктор (Singleton).
+    /// Приватный конструктор
     /// </summary>
     private ModelTableOfRecords()
     {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.CodeDom;
-
-namespace Model.TableOfRecords
+﻿namespace Model.TableOfRecords
 {
   /// <summary>
   /// Класс, представляющий запись в таблице рекордов.
@@ -36,7 +33,7 @@ namespace Model.TableOfRecords
     public Record(string name, int score, int level)
     {
       if (string.IsNullOrWhiteSpace(name))
-       name = DEFAULT_NAME;
+        name = DEFAULT_NAME;
       if (score < 0)
         score = 0;
 

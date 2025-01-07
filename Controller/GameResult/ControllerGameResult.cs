@@ -1,7 +1,4 @@
-﻿using Model;
-using Model.Game;
-using Model.GameResult;
-using System;
+﻿using Model.GameResult;
 using View.GameResult;
 
 namespace Controller.GameResult

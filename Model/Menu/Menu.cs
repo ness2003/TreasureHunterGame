@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿
 namespace Model.Menu
 {
   /// <summary>
@@ -135,7 +132,6 @@ namespace Model.Menu
       _items.Remove(lastItem.Id);
       _orderedItems.Remove(lastIndex);
 
-      // Сбрасываем индекс выбранного элемента, если он был последним
       if (_selectedItemIndex == lastIndex)
       {
         _selectedItemIndex = 0;

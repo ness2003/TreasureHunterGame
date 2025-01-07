@@ -1,5 +1,4 @@
-﻿using System;
-using Controller.Game;
+﻿using Controller.Game;
 using Controller.GameResult;
 using Controller.PauseMenu;
 using Controller.Rules;
@@ -93,7 +92,7 @@ namespace Controller.Menu
       ControllerGame.OnGameEnded += RemoveContinueGameElementCall;
       ControllerGame.GoToBack += Start;
       ControllerGame.ChangeScoreAndLevel += ControllerGameResult.ChangeScoreAndLevel;
-      
+
       //ControllerGame.GoToGameResult += RemoveContinueGameElementCall;
       ControllerGame.GoToGameResult += ControllerGameResult.Start;
       ControllerGame.OnGamePaused += ControllerGame.Stop;
@@ -124,7 +123,7 @@ namespace Controller.Menu
     /// </summary>
     public virtual void Start()
     {
-      Clear();   
+      Clear();
     }
 
     /// <summary>
@@ -134,8 +133,9 @@ namespace Controller.Menu
     {
       if (_menuMain.Items.Length == 4)
       {
-        _menuMain.AddMenuItemNewGame();
         _menuMain[(int)MenuMain.MenuIds.New].Name = "Продолжить игру";
+        _menuMain.AddMenuItemNewGame();
+        _menuMain[(int)MenuMain.MenuIds.NewGame].Enter += Stop;
         _menuMain[(int)MenuMain.MenuIds.NewGame].Enter += ControllerGame.ResetCall;
         _menuMain[(int)MenuMain.MenuIds.NewGame].Enter += ControllerGame.Start;
       }
@@ -148,11 +148,12 @@ namespace Controller.Menu
     {
       if (_menuMain.Items.Length == 5)
       {
-        _menuMain[(int)MenuMain.MenuIds.New].Name = "Новая игра";
+        _menuMain[(int)MenuMain.MenuIds.NewGame].Enter -= Stop;
         _menuMain[(int)MenuMain.MenuIds.NewGame].Enter -= ControllerGame.ResetCall;
         _menuMain[(int)MenuMain.MenuIds.NewGame].Enter -= ControllerGame.Start;
         _menuMain.RemoveLastItem();
-      }     
+        _menuMain[(int)MenuMain.MenuIds.New].Name = "Новая игра";
+      }
     }
 
     /// <summary>
