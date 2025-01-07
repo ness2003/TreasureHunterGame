@@ -1,40 +1,87 @@
 ﻿using Model.Game;
 using Model.Game.GameObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Windows.Threading;
 using View.Game;
 
 namespace ViewWPF.Game
 {
+  /// <summary>
+  /// WPF-отображение игры
+  /// </summary>
   public class ViewGameWPF : ViewGame
   {
+    /// <summary>
+    /// Окно игры, в котором отображается все содержимое
+    /// </summary>
     private readonly Window _gameWindow;
+
+    /// <summary>
+    /// Основной контейнер, в котором размещены все элементы игры
+    /// </summary>
     private readonly Grid _mainGrid;
+
+    /// <summary>
+    /// Холст для отображения игрового поля и объектов
+    /// </summary>
     private readonly Canvas _gameCanvas;
+
+    /// <summary>
+    /// Холст для отображения панели с информацией (время, счет, уровень)
+    /// </summary>
     private readonly Canvas _infoCanvas;
-    private readonly Canvas _goalCanvas;  // Новый Canvas для целей уровня
+
+    /// <summary>
+    /// Холст для отображения целей уровня (монеты и требуемый счет)
+    /// </summary>
+    private readonly Canvas _goalCanvas;
+
+    /// <summary>
+    /// Объект для фона игры, который используется для настройки фона на холсте
+    /// </summary>
     private readonly ImageBrush _backgroundBrush;
 
+    /// <summary>
+    /// Текстовый блок для отображения оставшегося времени игры
+    /// </summary>
     private TextBlock _timeTextBlock;
+
+    /// <summary>
+    /// Текстовый блок для отображения текущего счета игрока
+    /// </summary>
     private TextBlock _scoreTextBlock;
+
+    /// <summary>
+    /// Текстовый блок для отображения текущего уровня игры
+    /// </summary>
     private TextBlock _levelTextBlock;
 
+    /// <summary>
+    /// Текстовый блок для отображения количества золотых монет, необходимых для выполнения цели
+    /// </summary>
     private TextBlock _goldCoinTextBlock;
+
+    /// <summary>
+    /// Текстовый блок для отображения количества серебряных монет, необходимых для выполнения цели
+    /// </summary>
     private TextBlock _silverCoinTextBlock;
+
+    /// <summary>
+    /// Текстовый блок для отображения количества бронзовых монет, необходимых для выполнения цели
+    /// </summary>
     private TextBlock _bronzeCoinTextBlock;
 
 
+    /// <summary>
+    /// Конструктор для инициализации представления игры.
+    /// </summary>
+    /// <param name="parModelGame">Модель игры, которая передается в представление.</param>
     public ViewGameWPF(ModelGame parModelGame) : base(parModelGame)
     {
+      _modelGame = parModelGame;
       _gameWindow = MainScreen.GetInstance().Window;
 
       // Основной контейнер
@@ -73,6 +120,9 @@ namespace ViewWPF.Game
       _modelGame.NeedRedraw += OnCanRender;
     }
 
+    /// <summary>
+    /// Создает панель целей уровня, которая отображает информацию о монетах и требуемом счете.
+    /// </summary>
     private void CreateGoalPanel()
     {
       var goal = _modelGame.CurrentGoal;
@@ -84,16 +134,16 @@ namespace ViewWPF.Game
       _goalCanvas.Children.Add(titleTextBlock);
 
       // Центрируем заголовок
-      titleTextBlock.SizeChanged += (sender, e) =>
+      titleTextBlock.SizeChanged += (parSender, parE) =>
       {
         Canvas.SetLeft(titleTextBlock, (_goalCanvas.Width - titleTextBlock.ActualWidth) / 2);
         Canvas.SetTop(titleTextBlock, 10);
       };
 
       // Создаём монеты
-      CreateGoalCoin(ObjectType.GoldCell, goal.CountGoldCoins, _goalCanvas.Width/2 - 150, 50);
-      CreateGoalCoin(ObjectType.SilverCell, goal.CountSilverCoins, _goalCanvas.Width/2, 50);
-      CreateGoalCoin(ObjectType.BronzeCell, goal.CountBronzeCoins, _goalCanvas.Width/2 + 150, 50);
+      CreateGoalCoin(ObjectType.GoldCell, goal.CountGoldCoins, _goalCanvas.Width / 2 - 150, 50);
+      CreateGoalCoin(ObjectType.SilverCell, goal.CountSilverCoins, _goalCanvas.Width / 2, 50);
+      CreateGoalCoin(ObjectType.BronzeCell, goal.CountBronzeCoins, _goalCanvas.Width / 2 + 150, 50);
 
       // Требуемый счёт
       var scoreTextBlock = new TextBlock
@@ -107,15 +157,16 @@ namespace ViewWPF.Game
       _goalCanvas.Children.Add(scoreTextBlock);
 
       // Центрируем текст с требуемым счётом
-      scoreTextBlock.SizeChanged += (sender, e) =>
+      scoreTextBlock.SizeChanged += (parSender, parE) =>
       {
         Canvas.SetLeft(scoreTextBlock, (_goalCanvas.Width - scoreTextBlock.ActualWidth) / 2);
         Canvas.SetTop(scoreTextBlock, 100);
       };
     }
 
-
-
+    /// <summary>
+    /// Обновляет панель целей уровня, чтобы отобразить актуальную информацию о монетах и требуемом счете.
+    /// </summary>
     private void UpdateGoalPanel()
     {
       var goal = _modelGame.CurrentGoal;
@@ -126,29 +177,39 @@ namespace ViewWPF.Game
       UpdateCoinText(ObjectType.BronzeCell, goal.CountBronzeCoins);
 
       // Обновляем требуемый счёт
-      var scoreTextBlock = _goalCanvas.Children.OfType<TextBlock>().FirstOrDefault(t => t.Text.StartsWith("Требуемый"));
+      var scoreTextBlock = _goalCanvas.Children.OfType<TextBlock>().FirstOrDefault(parT => parT.Text.StartsWith("Требуемый"));
       if (scoreTextBlock != null)
       {
         scoreTextBlock.Text = $"Требуемый счет: {goal.ScoreTarget}";
       }
     }
 
-
-    private void UpdateCoinText(ObjectType coinType, int coinCount)
+    /// <summary>
+    /// Обновляет текст с количеством монет для конкретного типа монеты.
+    /// </summary>
+    /// <param name="parCoinType">Тип монеты (золотая, серебряная, бронзовая)</param>
+    /// <param name="parCoinCount">Количество монет данного типа</param>
+    private void UpdateCoinText(ObjectType parCoinType, int parCoinCount)
     {
       // Обновляем соответствующий TextBlock
-      if (coinType == ObjectType.GoldCell && _goldCoinTextBlock != null)
-        _goldCoinTextBlock.Text = coinCount.ToString();
-      else if (coinType == ObjectType.SilverCell && _silverCoinTextBlock != null)
-        _silverCoinTextBlock.Text = coinCount.ToString();
-      else if (coinType == ObjectType.BronzeCell && _bronzeCoinTextBlock != null)
-        _bronzeCoinTextBlock.Text = coinCount.ToString();
+      if (parCoinType == ObjectType.GoldCell && _goldCoinTextBlock != null)
+        _goldCoinTextBlock.Text = parCoinCount.ToString();
+      else if (parCoinType == ObjectType.SilverCell && _silverCoinTextBlock != null)
+        _silverCoinTextBlock.Text = parCoinCount.ToString();
+      else if (parCoinType == ObjectType.BronzeCell && _bronzeCoinTextBlock != null)
+        _bronzeCoinTextBlock.Text = parCoinCount.ToString();
     }
 
-
-    private void CreateGoalCoin(ObjectType coinType, int coinCount, double xPosition, double yPosition)
+    /// <summary>
+    /// Создает отображение монеты на панели целей уровня.
+    /// </summary>
+    /// <param name="parCoinType">Тип монеты</param>
+    /// <param name="parCoinCount">Количество монет</param>
+    /// <param name="parXPosition">Позиция X для размещения монеты</param>
+    /// <param name="parYPosition">Позиция Y для размещения монеты</param>
+    private void CreateGoalCoin(ObjectType parCoinType, int parCoinCount, double parXPosition, double parYPosition)
     {
-      var coinImage = new ImageBrush(new BitmapImage(new Uri(GetImagePath(coinType))));
+      var coinImage = new ImageBrush(new BitmapImage(new Uri(GetImagePath(parCoinType))));
 
       var coinEllipse = new Ellipse
       {
@@ -156,40 +217,42 @@ namespace ViewWPF.Game
         Height = 40,
         Fill = coinImage
       };
-      Canvas.SetLeft(coinEllipse, xPosition);
-      Canvas.SetTop(coinEllipse, yPosition);
+      Canvas.SetLeft(coinEllipse, parXPosition);
+      Canvas.SetTop(coinEllipse, parYPosition);
       _goalCanvas.Children.Add(coinEllipse);
 
       // Текст с количеством монет
       var countTextBlock = new TextBlock
       {
-        Text = coinCount.ToString(),
+        Text = parCoinCount.ToString(),
         FontSize = 16,
         FontWeight = FontWeights.Bold,
         Foreground = Brushes.Black,
         Margin = new Thickness(5)
       };
-      Canvas.SetLeft(countTextBlock, xPosition + 10);
-      Canvas.SetTop(countTextBlock, yPosition + 40);
+      Canvas.SetLeft(countTextBlock, parXPosition + 10);
+      Canvas.SetTop(countTextBlock, parYPosition + 40);
       _goalCanvas.Children.Add(countTextBlock);
 
       // Сохраняем ссылку на TextBlock в зависимости от типа монеты
-      if (coinType == ObjectType.GoldCell)
+      if (parCoinType == ObjectType.GoldCell)
         _goldCoinTextBlock = countTextBlock;
-      else if (coinType == ObjectType.SilverCell)
+      else if (parCoinType == ObjectType.SilverCell)
         _silverCoinTextBlock = countTextBlock;
-      else if (coinType == ObjectType.BronzeCell)
+      else if (parCoinType == ObjectType.BronzeCell)
         _bronzeCoinTextBlock = countTextBlock;
     }
 
-
+    /// <summary>
+    /// Обработчик события, когда необходимо перерисовать экран.
+    /// </summary>
     private void OnCanRender()
     {
       Application.Current.Dispatcher.Invoke(Render);
     }
 
     /// <summary>
-    /// Инициализация экрана
+    /// Инициализация экрана игры: создание панелей и объектов.
     /// </summary>
     public void InitializeScreen()
     {
@@ -197,6 +260,9 @@ namespace ViewWPF.Game
       CreateGoalPanel();
     }
 
+    /// <summary>
+    /// Создает информационную панель, отображающую время, счет и уровень.
+    /// </summary>
     private void CreateInfoPanel()
     {
       _timeTextBlock = CreateTextBlock("⏱️ Время: 0 сек", Brushes.LightGreen);
@@ -217,18 +283,26 @@ namespace ViewWPF.Game
       _infoCanvas.Children.Add(panel);
     }
 
-    private TextBlock CreateTextBlock(string text, Brush color)
+    /// <summary>
+    /// Создает текстовый блок с заданным текстом и цветом.
+    /// </summary>
+    /// <param name="parText">Текст, который будет отображаться</param>
+    /// <param name="parColor">Цвет текста</param>
+    private TextBlock CreateTextBlock(string parText, Brush parColor)
     {
       return new TextBlock
       {
-        Text = text,
+        Text = parText,
         FontSize = 16,
         FontWeight = FontWeights.Bold,
-        Foreground = color,
+        Foreground = parColor,
         Margin = new Thickness(5)
       };
     }
 
+    /// <summary>
+    /// Обновляет информацию о времени, счете и уровне игры.
+    /// </summary>
     private void UpdateGameInfo()
     {
       if (_timeTextBlock != null && _scoreTextBlock != null && _levelTextBlock != null)
@@ -240,6 +314,9 @@ namespace ViewWPF.Game
       }
     }
 
+    /// <summary>
+    /// Рисует все элементы на экране: игровое поле, игрока, объекты игры.
+    /// </summary>
     public override void Draw()
     {
       _gameCanvas.Children.Clear();
@@ -253,6 +330,9 @@ namespace ViewWPF.Game
       UpdateGoalPanel();  // Обновляем цели уровня
     }
 
+    /// <summary>
+    /// Рисует игровое поле.
+    /// </summary>
     private void DrawGameField()
     {
       Rectangle gameField = new Rectangle
@@ -267,6 +347,9 @@ namespace ViewWPF.Game
       _gameCanvas.Children.Add(gameField);
     }
 
+    /// <summary>
+    /// Рисует игрока на игровом поле.
+    /// </summary>
     private void DrawPlayer()
     {
       var player = _modelGame.Player;
@@ -281,9 +364,13 @@ namespace ViewWPF.Game
       _gameCanvas.Children.Add(playerRect);
     }
 
-    private void DrawGameObjects(IEnumerable<GameObject> gameObjects)
+    /// <summary>
+    /// Рисует объекты игры (монеты, бонусы, плохие объекты).
+    /// </summary>
+    /// <param name="parGameObjects">Объекты игры для отображения (монеты, бонусы, плохие объекты)</param>
+    private void DrawGameObjects(IEnumerable<GameObject> parGameObjects)
     {
-      foreach (var obj in gameObjects)
+      foreach (var obj in parGameObjects)
       {
         ImageBrush objectBrush = new ImageBrush(new BitmapImage(new Uri(GetImagePath(obj.ObjectType))));
 
@@ -300,9 +387,13 @@ namespace ViewWPF.Game
       }
     }
 
-    private string GetImagePath(ObjectType objectType)
+    /// <summary>
+    /// Получает путь к изображению для заданного типа объекта.
+    /// </summary>
+    /// <param name="parObjectType">Тип объекта (монета, бонус, плохой объект)</param>
+    private string GetImagePath(ObjectType parObjectType)
     {
-      return objectType switch
+      return parObjectType switch
       {
         ObjectType.GoldCell => "pack://application:,,,/ViewWPF;component/Assets/gold_coin.png",
         ObjectType.SilverCell => "pack://application:,,,/ViewWPF;component/Assets/silver_coin.png",
@@ -316,11 +407,17 @@ namespace ViewWPF.Game
       };
     }
 
+    /// <summary>
+    /// Обновляет отображение на экране.
+    /// </summary>
     private void Render()
     {
       Draw();
     }
 
+    /// <summary>
+    /// Обрабатывает начало игры и рисует начальное состояние.
+    /// </summary>
     public override void OnStartGame()
     {
       Draw();

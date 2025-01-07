@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using System.Windows.Controls;
 using System.Windows;
 using Model.Rules;
@@ -16,7 +12,10 @@ namespace ViewWPF.Rules
     /// Конструктор
     /// </summary>
     /// <param name="parModelRules">Экземпляр модели правил игры</param>
-    public ViewRulesWPF(ModelRules parModelRules) : base(parModelRules) { }
+    public ViewRulesWPF(ModelRules parModelRules) : base(parModelRules) 
+    {
+      _modelRules = parModelRules;
+    }
 
     /// <summary>
     /// Инициализация параметров представления

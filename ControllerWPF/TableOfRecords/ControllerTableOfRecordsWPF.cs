@@ -1,66 +1,58 @@
-﻿using Controller.Rules;
-using Model.Rules;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using View.Rules;
-using ViewWPF.Rules;
+﻿using System.Windows.Input;
 using ViewWPF;
 using Controller.TableOfRecords;
 using ViewWPF.TableOfRecords;
 using Model.TableOfRecords;
-using View.TableOfRecords;
 
 namespace ControllerWPF.TableOfRecords
 {
   /// <summary>
-  /// Контроллер для таблицы рекордов в WPF
+  /// Контроллер для таблицы рекордов в WPF.
+  /// Управляет процессом отображения таблицы рекордов, обработкой событий и взаимодействием с моделью.
   /// </summary>
   public class ControllerRTableOfRecordsWPF : TableOfRecordsController, IWPFController
   {
     /// <summary>
-    /// Конструктор
+    /// Конструктор контроллера для таблицы рекордов.
     /// </summary>
+    /// <param name="parModelTableOfRecords">Модель таблицы рекордов.</param>
     public ControllerRTableOfRecordsWPF(ModelTableOfRecords parModelTableOfRecords) : base(parModelTableOfRecords)
     {
     }
 
     /// <summary>
-    /// Обработчик нажатий клавиш
+    /// Обработчик нажатий клавиш для управления отображением таблицы рекордов.
     /// </summary>
-    /// <param name="parSender">Источник события</param>
-    /// <param name="parArgs">Аргументы события</param>
+    /// <param name="parSender">Источник события (окно).</param>
+    /// <param name="parArgs">Аргументы события (информация о нажатой клавише).</param>
     public void KeyEventHandler(object parSender, KeyEventArgs parArgs)
     {
       switch (parArgs.Key)
       {
         case Key.Escape:
-          Stop(); // Остановка контроллера при нажатии Escape
+          Stop();
           break;
       }
     }
 
     /// <summary>
-    /// Запуск контроллера
+    /// Запускает контроллер, загружает данные таблицы рекордов и отображает её.
     /// </summary>
     public override void Start()
     {
       _viewTableOfRecords = new ViewTableOfRecordsWPF(_modelTableOfRecords);
-      _modelTableOfRecords.Load(); 
+      _modelTableOfRecords.Load();
       MainScreen.GetInstance().Window.KeyDown += KeyEventHandler;
     }
 
     /// <summary>
-    /// Остановка контроллера
+    /// Останавливает контроллер, очищает содержимое экрана и возвращает в предыдущее меню.
     /// </summary>
     public override void Stop()
     {
-      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler; // Отключение обработчика событий
-      MainScreen.GetInstance().StackPanel.Children.Clear(); // Очистка содержимого экрана
-      GoBackCall(); // Возврат в предыдущее меню
+      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler;
+      MainScreen.GetInstance().StackPanel.Children.Clear();
+      GoBackCall();
     }
   }
 }

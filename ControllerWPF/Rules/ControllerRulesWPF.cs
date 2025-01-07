@@ -1,62 +1,57 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Controller;
+﻿using System.Windows.Input;
 using Controller.Rules;
 using ViewWPF.Rules;
 using ViewWPF;
 using Model.Rules;
-using View.Rules;
 
 namespace ControllerWPF.Rules
 {
   /// <summary>
-  /// Контроллер просмотра правил для WPF
+  /// Контроллер для отображения правил игры в WPF.
+  /// Управляет процессом отображения правил и обработкой пользовательских действий.
   /// </summary>
   public class ControllerRulesWPF : ControllerRules, IWPFController
   {
     /// <summary>
-    /// Конструктор
+    /// Конструктор контроллера для просмотра правил игры.
     /// </summary>
+    /// <param name="parModelRules">Модель правил игры.</param>
     public ControllerRulesWPF(ModelRules parModelRules) : base(parModelRules)
     {
     }
 
     /// <summary>
-    /// Обработчик нажатий клавиш
+    /// Обработчик нажатий клавиш для управления меню правил.
     /// </summary>
-    /// <param name="parSender">Источник события</param>
-    /// <param name="parArgs">Аргументы события</param>
+    /// <param name="parSender">Источник события (окно).</param>
+    /// <param name="parArgs">Аргументы события (информация о нажатой клавише).</param>
     public void KeyEventHandler(object parSender, KeyEventArgs parArgs)
     {
       switch (parArgs.Key)
       {
         case Key.Escape:
-          Stop(); // Остановка контроллера при нажатии Escape
-          GoBackCall(); // Возврат в предыдущее меню
+          Stop();
+          GoBackCall();
           break;
       }
     }
 
     /// <summary>
-    /// Запуск контроллера
+    /// Запускает контроллер и отображает правила игры.
     /// </summary>
     public override void Start()
     {
-      _viewRules = new ViewRulesWPF(_modelRules); // Инициализация представления правил
-      MainScreen.GetInstance().Window.KeyDown += KeyEventHandler; // Подключение обработчика событий клавиш
+      _viewRules = new ViewRulesWPF(_modelRules);
+      MainScreen.GetInstance().Window.KeyDown += KeyEventHandler;
     }
 
     /// <summary>
-    /// Остановка контроллера
+    /// Останавливает контроллер, очищает содержимое экрана и отписывается от событий клавиш.
     /// </summary>
     public override void Stop()
     {
-      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler; // Отключение обработчика событий
-      MainScreen.GetInstance().StackPanel.Children.Clear(); // Очистка содержимого экрана
+      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler;
+      MainScreen.GetInstance().StackPanel.Children.Clear();
     }
   }
 }

@@ -5,7 +5,6 @@ using ViewWPF.Game;
 using System.Windows;
 using System.Windows.Input;
 using ViewWPF;
-using System.Configuration;
 
 namespace ControllerWPF.Game
 {
@@ -13,8 +12,13 @@ namespace ControllerWPF.Game
   /// Контроллер игры для WPF.
   /// Управляет игровым процессом, включая обработку событий и обновление состояния игрока.
   /// </summary>
-  public class ControllerGameWPF : ControllerGame
+  public class ControllerGameWPF : ControllerGame, IWPFController
   {
+    /// <summary>
+    /// Флаг, указывающий, нужно ли завершить игру
+    /// </summary>
+    private Boolean _exit = false;
+
     /// <summary>
     /// Делегат для обработки движения игрока влево.
     /// </summary>
@@ -30,14 +34,12 @@ namespace ControllerWPF.Game
     /// </summary>
     public event PlayerAction? MovePlayerRight;
 
-
     /// <summary>
-    /// Конструктор
+    /// Конструктор контроллера игры для WPF.
     /// </summary>
-    /// <param name="modelGame">Модель игры.</param>
+    /// <param name="modelGame">Модель игры, содержащая состояние игры.</param>
     public ControllerGameWPF(ModelGame modelGame) : base(modelGame)
     {
-
     }
 
     /// <summary>
@@ -45,37 +47,34 @@ namespace ControllerWPF.Game
     /// </summary>
     public override void Start()
     {
+      // Инициализация представления игры для WPF
       _viewGame = new ViewGameWPF(_modelGame);
       base.Start();
+      MainScreen.GetInstance().Window.KeyDown += KeyEventHandler;
     }
 
     /// <summary>
-    /// Подписка на события
+    /// Подписка на события движения игрока влево и вправо.
     /// </summary>
     protected override void SubscribeToEvents()
     {
       base.SubscribeToEvents();
-      // Подписываемся на событие обновления игрока
-      PlayerUpdateHandlerEvent += PlayerUpdateHandler;
-
-      // Подписываемся на события движения игрока
       MovePlayerLeft += _modelGame.MovePlayerLeft;
       MovePlayerRight += _modelGame.MovePlayerRight;
     }
 
     /// <summary>
-    /// Отписка от событий
+    /// Отписка от событий движения игрока влево и вправо.
     /// </summary>
     protected override void UnsubscribeFromEvents()
     {
       base.UnsubscribeFromEvents();
-      PlayerUpdateHandlerEvent -= PlayerUpdateHandler;
       MovePlayerLeft -= _modelGame.MovePlayerLeft;
       MovePlayerRight -= _modelGame.MovePlayerRight;
     }
 
     /// <summary>
-    /// Очистка игрового поля
+    /// Очистка игрового поля в интерфейсе WPF.
     /// </summary>
     public override void ClearGameField()
     {
@@ -83,33 +82,49 @@ namespace ControllerWPF.Game
     }
 
     /// <summary>
-    /// Обработчик события обновления состояния игрока.
+    /// Обработка окончания игры.
     /// </summary>
-    protected override void PlayerUpdateHandler()
+    public override void ProcessEndGameCall()
     {
-      Application.Current.Dispatcher.Invoke(() =>
+      Application.Current.Dispatcher.Invoke(ProcessEndGame);
+    }
+
+    /// <summary>
+    /// Обработчик нажатий клавиш.
+    /// </summary>
+    /// <param name="parSender">Источник события.</param>
+    /// <param name="parArgs">Аргументы события (содержат информацию о нажатой клавише).</param>
+    public void KeyEventHandler(object parSender, KeyEventArgs parArgs)
+    {
+      switch (parArgs.Key)
       {
-        // Проверяем состояние клавиш и вызываем соответствующие события
-        if (Keyboard.IsKeyDown(Key.Left))
-        {
+        case Key.Left:
           MovePlayerLeft?.Invoke();
-        }
-        if (Keyboard.IsKeyDown(Key.Right))
-        {
+          break;
+        case Key.Right:
           MovePlayerRight?.Invoke();
-        }
-        // Обрабатываем клавишу Escape для остановки игры
-        if (Keyboard.IsKeyDown(Key.Escape))
-        {
+          break;
+        case Key.Escape:
           GameInterruptCall();
+          Stop();
           GoBackCall();
-        }
-        if (Keyboard.IsKeyDown(Key.Space))
-        {
+          _exit = true;
+          break;
+        case Key.Space:
+          Stop();
           PauseGameCall();
-        }
-      });
+          _exit = true;
+          break;
+      }
+    }
+
+    /// <summary>
+    /// Остановка контроллера игры.
+    /// </summary>
+    public override void Stop()
+    {
+      base.Stop();
+      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler;
     }
   }
 }
-

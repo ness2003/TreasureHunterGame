@@ -21,65 +21,73 @@ using Controller.GameResult;
 namespace ControllerWPF.Menu
 {
   /// <summary>
-  /// Контроллер меню для WPF
+  /// Контроллер главного меню для WPF.
+  /// Управляет интерфейсом главного меню и взаимодействием с пользователем.
   /// </summary>
   public class ControllerMenuMainWPF : ControllerMenuMain, IWPFController
   {
     /// <summary>
-    /// Конструктор
+    /// Конструктор контроллера главного меню для WPF.
     /// </summary>
+    /// <param name="parMenuMain">Модель главного меню.</param>
+    /// <param name="parControllerGame">Контроллер игры.</param>
+    /// <param name="parControllerRules">Контроллер правил.</param>
+    /// <param name="parTableOfRecordsController">Контроллер таблицы рекордов.</param>
+    /// <param name="parControllerMenuPause">Контроллер меню паузы.</param>
+    /// <param name="parControllerGameResult">Контроллер результата игры.</param>
     public ControllerMenuMainWPF(MenuMain parMenuMain, ControllerGame parControllerGame, ControllerRules parControllerRules, TableOfRecordsController parTableOfRecordsController, ControllerMenuPause parControllerMenuPause, ControllerGameResult parControllerGameResult)
         : base(parMenuMain, parControllerGame, parControllerRules, parTableOfRecordsController, parControllerMenuPause, parControllerGameResult)
     {
     }
 
     /// <summary>
-    /// Запустить контроллер
+    /// Запускает контроллер и отображает меню.
     /// </summary>
     public override void Start()
     {
-      base.Start(); // Вызов базового метода Start
-      _menuMainView = new ViewMenuWPF(_menuMain); // Инициализация представления
-      _menuMainView.Draw(); // Отображение меню
-      MainScreen.GetInstance().Window.KeyDown += KeyEventHandler; // Подключение обработчика событий нажатия клавиш
+      base.Start();
+      _menuMainView = new ViewMenuWPF(_menuMain);
+      _menuMainView.Draw();
+      MainScreen.GetInstance().Window.KeyDown += KeyEventHandler;
     }
 
     /// <summary>
-    /// Остановить контроллер
+    /// Останавливает контроллер и очищает подписку на события.
     /// </summary>
     public override void Stop()
     {
-      base.Stop(); // Вызов базового метода Stop
-      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler; // Отключение обработчика событий
+      base.Stop();
+      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler;
     }
 
     /// <summary>
-    /// Обработчик нажатия кнопок
+    /// Обработчик нажатия клавиш для навигации по меню.
     /// </summary>
-    /// <param name="parSender">Источник события</param>
-    /// <param name="parArgs">Аргументы события</param>
+    /// <param name="parSender">Источник события (окно).</param>
+    /// <param name="parArgs">Аргументы события (клавиша).</param>
     public void KeyEventHandler(object parSender, KeyEventArgs parArgs)
     {
+      // Обработка нажатых клавиш для навигации по меню
       switch (parArgs.Key)
       {
         case Key.Up:
-          _menuMain.SelectPrevItem(); // Выбор предыдущего пункта меню
+          _menuMain.SelectPrevItem();
           break;
         case Key.Down:
-          _menuMain.SelectNextItem(); // Выбор следующего пункта меню
+          _menuMain.SelectNextItem();
           break;
         case Key.Enter:
-          _menuMain.EnterSelectedItem(); // Ввод выбранного пункта меню
+          _menuMain.EnterSelectedItem();
           break;
       }
     }
 
     /// <summary>
-    /// Очистить экран
+    /// Очищает экран от элементов управления и контента.
     /// </summary>
     public override void Clear()
     {
-      MainScreen.GetInstance().StackPanel.Children.Clear(); // Очистка содержимого экрана
+      MainScreen.GetInstance().StackPanel.Children.Clear();
     }
   }
 }

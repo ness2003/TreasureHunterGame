@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows;
 using View.GameResult;
 using Model.GameResult;
@@ -11,35 +6,45 @@ using System.Windows.Media;
 
 namespace ViewWPF.GameResult
 {
+  /// <summary>
+  /// Представление результатов игры для WPF
+  /// </summary>
   public class ViewGameResultWPF : ViewGameResult
   {
     /// <summary>
-    /// Ввод имени игрока для записи рекорда
+    /// Поле для ввода имени игрока при записи рекорда
     /// </summary>
-    TextBox _name;
+    private TextBox _name;
 
     /// <summary>
-    /// Ввод имени игрока для записи рекорда
+    /// Свойство для доступа к полю ввода имени игрока
     /// </summary>
     public TextBox Name { get => _name; set => _name = value; }
 
     /// <summary>
-    /// Конструктор
+    /// Конструктор представления результатов игры
     /// </summary>
-    /// <param name="gameResult"></param>
+    /// <param name="parModelGameResult">Модель результатов игры</param>
     public ViewGameResultWPF(ModelGameResult parModelGameResult) : base(parModelGameResult)
     {
-      StackPanel panel = MainScreen.GetInstance().StackPanel;
+      _modelGameResult = parModelGameResult;
+      Draw();
+    }
 
-      // Заголовок с результатами игры
+    /// <summary>
+    /// Нарисовать представление результатов игры (переопределение базового метода)
+    /// </summary>
+    public override void Draw()
+    {
+      StackPanel panel = MainScreen.GetInstance().StackPanel;
       panel.Children.Add(new TextBlock
       {
         FontSize = 24,
-        Text = $"Конец игры! Score: {parModelGameResult.Score} | Level: {parModelGameResult.Level}",
+        Text = $"Конец игры! Score: {_modelGameResult.Score} | Level: {_modelGameResult.Level}",
         FontWeight = FontWeights.Bold,
         Margin = new Thickness(0, 0, 0, 10),
         HorizontalAlignment = HorizontalAlignment.Center,
-        Foreground = new SolidColorBrush(Colors.White)  // Белый цвет текста
+        Foreground = new SolidColorBrush(Colors.CadetBlue)  // Цвет текста
       });
 
       // Сообщение о новом рекорде
@@ -50,7 +55,7 @@ namespace ViewWPF.GameResult
         FontWeight = FontWeights.Bold,
         Margin = new Thickness(0, 0, 0, 10),
         HorizontalAlignment = HorizontalAlignment.Center,
-        Foreground = new SolidColorBrush(Colors.White)  // Белый цвет текста
+        Foreground = new SolidColorBrush(Colors.Black)  // Цвет текста
       });
 
       // Поле для ввода имени игрока
@@ -61,17 +66,10 @@ namespace ViewWPF.GameResult
         HorizontalAlignment = HorizontalAlignment.Center,
         Width = 250,
         Background = new SolidColorBrush(Colors.White),
-        Foreground = new SolidColorBrush(Colors.Black), 
+        Foreground = new SolidColorBrush(Colors.Black),
         Margin = new Thickness(0, 10, 0, 20)
       };
       panel.Children.Add(_name);
-    }
-
-    /// <summary>
-    /// Нарисовать представление
-    /// </summary>
-    public override void Draw()
-    {
     }
   }
 }

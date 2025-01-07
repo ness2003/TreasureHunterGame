@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows;
 using Model.TableOfRecords;
 using View.TableOfRecords;
 
 namespace ViewWPF.TableOfRecords
 {
+  /// <summary>
+  /// WPF отображение таблицы рекордов
+  /// </summary>
   public class ViewTableOfRecordsWPF : ViewTableOfRecords
   {
     /// <summary>
@@ -17,6 +15,15 @@ namespace ViewWPF.TableOfRecords
     /// </summary>
     /// <param name="parModelTableOfRecords">Экземпляр модели таблицы рекордов</param>
     public ViewTableOfRecordsWPF(ModelTableOfRecords parModelTableOfRecords) : base(parModelTableOfRecords)
+    {
+      _modelTableOfRecords = parModelTableOfRecords;
+      Draw();
+    }
+
+    /// <summary>
+    /// Отрисовка представления таблицы рекордов
+    /// </summary>
+    public override void Draw()
     {
       StackPanel panel = MainScreen.GetInstance().StackPanel;
 
@@ -29,7 +36,7 @@ namespace ViewWPF.TableOfRecords
         HorizontalAlignment = HorizontalAlignment.Center
       });
 
-      foreach (var record in parModelTableOfRecords.RecordsValues)
+      foreach (var record in _modelTableOfRecords.RecordsValues)
       {
         panel.Children.Add(new TextBlock
         {
@@ -38,13 +45,6 @@ namespace ViewWPF.TableOfRecords
           HorizontalAlignment = HorizontalAlignment.Center
         });
       }
-    }
-
-    /// <summary>
-    /// Отрисовка представления таблицы рекордов
-    /// </summary>
-    public override void Draw()
-    {
     }
   }
 }

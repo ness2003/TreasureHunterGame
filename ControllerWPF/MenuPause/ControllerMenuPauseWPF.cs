@@ -7,64 +7,66 @@ using Controller.PauseMenu;
 namespace ControllerWPF.Menu
 {
   /// <summary>
-  /// Контроллер меню для WPF
+  /// Контроллер меню паузы для WPF.
+  /// Управляет отображением и взаимодействием с меню паузы.
   /// </summary>
   public class ControllerMenuPauseWPF : ControllerMenuPause, IWPFController
   {
     /// <summary>
-    /// Конструктор
+    /// Конструктор контроллера меню паузы для WPF.
     /// </summary>
+    /// <param name="parMenuPause">Модель меню паузы.</param>
     public ControllerMenuPauseWPF(MenuPause parMenuPause) : base(parMenuPause)
     {
     }
 
     /// <summary>
-    /// Запустить контроллер
+    /// Запускает контроллер и отображает меню паузы.
     /// </summary>
     public override void Start()
     {
-      base.Start(); // Вызов базового метода Start
-      _pauseMenuView = new ViewMenuWPF(_menuPause); // Инициализация представления для паузы
-      _pauseMenuView.Draw(); // Отображение меню паузы
-      MainScreen.GetInstance().Window.KeyDown += KeyEventHandler; // Подключение обработчика событий клавиш
+      base.Start(); 
+      _pauseMenuView = new ViewMenuWPF(_menuPause);
+      _pauseMenuView.Draw();
+      MainScreen.GetInstance().Window.KeyDown += KeyEventHandler; 
     }
 
     /// <summary>
-    /// Остановить контроллер
+    /// Останавливает контроллер и очищает подписку на события.
     /// </summary>
     public override void Stop()
     {
-      base.Stop(); // Вызов базового метода Stop
-      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler; // Отключение обработчика событий
+      base.Stop();
+      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler;
     }
 
     /// <summary>
-    /// Обработчик нажатия кнопок
+    /// Обрабатывает нажатие клавиш для навигации по меню паузы.
     /// </summary>
-    /// <param name="parSender">Источник события</param>
-    /// <param name="parArgs">Аргументы события</param>
+    /// <param name="parSender">Источник события (окно).</param>
+    /// <param name="parArgs">Аргументы события (клавиша).</param>
     public void KeyEventHandler(object parSender, KeyEventArgs parArgs)
     {
       switch (parArgs.Key)
       {
         case Key.Up:
-          _menuPause.SelectPrevItem(); // Выбор предыдущего пункта меню паузы
+          _menuPause.SelectPrevItem();
           break;
         case Key.Down:
-          _menuPause.SelectNextItem(); // Выбор следующего пункта меню паузы
+          _menuPause.SelectNextItem();
           break;
         case Key.Enter:
-          _menuPause.EnterSelectedItem(); // Ввод выбранного пункта меню паузы
+          _menuPause.EnterSelectedItem();
           break;
       }
     }
 
     /// <summary>
-    /// Очистить экран
+    /// Очищает экран от элементов управления и контента.
     /// </summary>
     public override void Clear()
     {
-      MainScreen.GetInstance().StackPanel.Children.Clear(); // Очистка содержимого экрана
+      MainScreen.GetInstance().StackPanel.Children.Clear();
     }
   }
 }

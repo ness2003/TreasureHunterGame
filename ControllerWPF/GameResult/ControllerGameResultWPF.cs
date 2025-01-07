@@ -1,16 +1,8 @@
-﻿using Controller;
-using Controller.GameResult;
-using Controller.Rules;
+﻿using Controller.GameResult;
 using Model.GameResult;
 using Model.TableOfRecords;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
-using View.GameResult;
 using ViewWPF;
 using ViewWPF.GameResult;
 
@@ -39,7 +31,7 @@ namespace ControllerWPF.GameResult
       switch (parArgs.Key)
       {
         case Key.Enter:
-          Stop(); // Остановить при нажатии Enter
+          Stop(); 
           break;
       }
     }
@@ -49,9 +41,9 @@ namespace ControllerWPF.GameResult
     /// </summary>
     public override void Start()
     {
-      MainScreen.GetInstance().StackPanel.Children.Clear(); // Очистка экрана
-      _viewGameResult = new ViewGameResultWPF(_modelGameResult); // Создание представления результата игры
-      MainScreen.GetInstance().Window.KeyDown += KeyEventHandler; // Подключение обработчика клавиш
+      MainScreen.GetInstance().StackPanel.Children.Clear();
+      _viewGameResult = new ViewGameResultWPF(_modelGameResult);
+      MainScreen.GetInstance().Window.KeyDown += KeyEventHandler;
     }
 
     /// <summary>
@@ -59,9 +51,9 @@ namespace ControllerWPF.GameResult
     /// </summary>
     public override void Stop()
     {
-      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler; // Отключение обработчика клавиш
+      MainScreen.GetInstance().Window.KeyDown -= KeyEventHandler; 
 
-      TextBox name = ((ViewGameResultWPF)_viewGameResult).Name; // Получение имени игрока
+      TextBox name = ((ViewGameResultWPF)_viewGameResult).Name;
       ModelTableOfRecords.Instance.Add(new Record(name.Text, _modelGameResult.Score, _modelGameResult.Level)); // Добавление записи в таблицу рекордов
       GoBackCall(); // Возврат на предыдущий экран
     }
