@@ -59,15 +59,5 @@ namespace Model {
                 resourceCulture = value;
             }
         }
-    /// <summary>
-    ///   Ищет локализованную строку, похожую на Главное меню.
-    /// </summary>
-    internal static string MainMenu
-    {
-      get
-      {
-        return ResourceManager.GetString("MainMenu", resourceCulture);
-      }
     }
-  }
 }

@@ -41,7 +41,7 @@ namespace Model.Menu
     /// <summary>
     /// Конструктор главного меню.
     /// </summary>
-    public MenuMain() : base(Resources.MainMenu)
+    public MenuMain() : base("MainMenu")
     {
       // Добавляем элементы меню с идентификаторами и названиями.
       AddMenuItem(new MenuItem((int)MenuIds.New, "Новая игра"));
